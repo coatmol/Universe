@@ -26,8 +26,8 @@ public:
 	void HandleInput(GLFWwindow* window);
 
 private:
-	float speed = 0.1f;
-	float sensitivity = 1.0f;
+	float speed = 0.05f;
+	float sensitivity = 0.1f;
 
 	bool firstClick = true;
 };

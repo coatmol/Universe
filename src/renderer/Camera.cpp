@@ -48,7 +48,7 @@ void Camera::HandleInput(GLFWwindow* window)
 	}
 	else if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE)
 	{
-		speed = 0.1f;
+		speed = 0.05f;
 	}
 
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2) == GLFW_PRESS)
@@ -75,8 +75,6 @@ void Camera::HandleInput(GLFWwindow* window)
 		}
 
 		Orientation = glm::rotate(Orientation, glm::radians(-rotY), Up);
-
-		//glfwSetCursorPos(window, width / 2, height / 2);
 	}
 	else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2) == GLFW_RELEASE)
 	{
