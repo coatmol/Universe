@@ -8,7 +8,7 @@ class VAO
 public:
 	VAO();
 
-	void LinkVBO(VBO& vbo, GLuint layout);
+	void LinkAttrib(VBO& vbo, GLuint layout, GLuint numComponents, GLenum type, GLsizei stride, void* offset);
 	void Bind();
 	void Unbind();
 	void Delete();

@@ -11,4 +11,6 @@ public:
 	void Delete();
 private:
 	GLuint Program;
+
+	void compileError(GLuint shader, const char* type);
 };
