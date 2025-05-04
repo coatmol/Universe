@@ -12,6 +12,7 @@ public:
 	void Bind();
 	void Unbind();
 	void Delete();
-private:
+
 	GLuint ID;
+private:
 };

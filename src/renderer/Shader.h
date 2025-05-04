@@ -9,8 +9,9 @@ public:
 
 	void Activate();
 	void Delete();
+
+	GLuint ProgramID;
 private:
-	GLuint Program;
 
 	void compileError(GLuint shader, const char* type);
 };

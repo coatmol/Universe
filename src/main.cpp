@@ -1,17 +1,40 @@
 #include <iostream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include "renderer/Shader.h"
 #include "renderer/gl/VAO.h"
 #include "renderer/gl/VBO.h"
 #include "renderer/gl/EBO.h"
+#include "renderer/Camera.h"
+
+int WIDTH = 1366;
+int HEIGHT = 720;
+
+GLfloat vertices[] =
+{ //     COORDINATES     /        COLORS      
+	-0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f,
+	-0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,
+	 0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,
+	 0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f,
+	 0.0f, 0.8f,  0.0f,     0.92f, 0.86f, 0.76f
+};
+
+GLuint indices[] =
+{
+	0, 1, 2,
+	0, 2, 3,
+	0, 1, 4,
+	1, 2, 4,
+	2, 3, 4,
+	3, 0, 4
+};
 
 int main()
 {
-	int WIDTH = 1366;
-	int HEIGHT = 720;
-
 	if (!glfwInit())
 	{
 		std::cerr << "Failed to initialize GLFW" << std::endl;
@@ -38,26 +61,11 @@ int main()
 		glfwTerminate();
 		return -1;
 	}
+
 	glViewport(0, 0, WIDTH, HEIGHT);
+	glEnable(GL_DEPTH_TEST);
 
-	GLfloat vertices[] =
-	{
-		// ============ VERTEX POSITIONS ============== || ============ VERTEX COLORS ============== \\ 
-		-0.5f,		-0.5f * float(sqrt(3)) / 3,		0.0f,	0.8f, 0.3f, 0.02f,	// Lower left corner
-		0.5f,		-0.5f * float(sqrt(3)) / 3,		0.0f,	0.8f, 0.3f, 0.02f,	// Lower right corner
-		0.0f,		0.5f * float(sqrt(3)) * 2 / 3,	0.0f,	1.0f, 0.6f, 0.32f,	// Upper corner
-		-0.5f / 2,	0.5f * float(sqrt(3)) / 6,		0.0f,	0.9f, 0.45f, 0.17f,	// Inner left
-		0.5f / 2,	0.5f * float(sqrt(3)) / 6,		0.0f,	0.9f, 0.45f, 0.17f,	// Inner right
-		0.0f,		-0.5f * float(sqrt(3)) / 3,		0.0f,	0.8f, 0.3f, 0.02f	// Inner down
-	};
-
-	GLuint indices[] =
-	{
-		0, 3, 5, // Lower left triangle
-		3, 2, 4, // Upper triangle
-		5, 4, 1 // Lower right triangle
-	};
-
+	Camera camera(WIDTH, HEIGHT, glm::vec3(0.0f, 0.0f, 2.0f), 45.0f, 0.1f, 100.0f);
 	Shader shader("assets/shaders/default-vert.glsl", "assets/shaders/default-frag.glsl");
 
 	VAO vao;
@@ -73,14 +81,28 @@ int main()
 	vbo.Unbind();
 	ebo.Unbind();
 
+	float rotation = 0.0f;
+	double prevTime = glfwGetTime();
+
 	while (!glfwWindowShouldClose(window))
 	{
-		glClear(GL_COLOR_BUFFER_BIT);
-		glClearColor(0.0f, 0.0f, 0.0f, 255.0f);
+		camera.HandleInput(window);
 
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClearColor(0.0f, 0.0f, 0.0f, 255.0f);
 		shader.Activate();
+
+		camera.Update(shader, "camMatrix");
+
+		double crntTime = glfwGetTime();
+		if (crntTime - prevTime >= 1/60)
+		{
+			rotation += 0.5f;
+			prevTime = crntTime;
+		}
+
 		vao.Bind();
-		glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, sizeof(indices)/sizeof(int), GL_UNSIGNED_INT, 0);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
