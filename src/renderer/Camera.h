@@ -24,10 +24,10 @@ public:
 
 	void Update(Shader& shader, const char* uniform);
 	void HandleInput(GLFWwindow* window);
-
+	void HandleScroll(GLFWwindow* window, double xoffset, double yoffset);
 private:
 	float speed = 0.05f;
-	float sensitivity = 0.1f;
+	float sensitivity = 2.0f;
 
 	bool firstClick = true;
 };

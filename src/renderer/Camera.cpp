@@ -64,8 +64,8 @@ void Camera::HandleInput(GLFWwindow* window)
 		double mouseX, mouseY;
 		glfwGetCursorPos(window, &mouseX, &mouseY);
 
-		float rotX = sensitivity * (float)(mouseY - height / 2) / height;
-		float rotY = sensitivity * (float)(mouseX - height / 2) / height;
+		float rotX = sensitivity * (float)(mouseY - (height / 2)) / height;
+		float rotY = sensitivity * (float)(mouseX - (width / 2)) / width;
 
 		glm::vec3 newOrientation = glm::rotate(Orientation, glm::radians(-rotX), glm::normalize(glm::cross(Orientation, Up)));
 
@@ -81,4 +81,9 @@ void Camera::HandleInput(GLFWwindow* window)
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 		firstClick = true;
 	}
+}
+
+void Camera::HandleScroll(GLFWwindow* window, double xoffset, double yoffset)
+{
+	FOVdeg = std::max(1.0f, std::min(80.0f, FOVdeg - (float)yoffset));
 }

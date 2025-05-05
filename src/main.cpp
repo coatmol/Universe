@@ -65,8 +65,16 @@ int main()
 	glViewport(0, 0, WIDTH, HEIGHT);
 	glEnable(GL_DEPTH_TEST);
 
-	Camera camera(WIDTH, HEIGHT, glm::vec3(0.0f, 0.0f, 2.0f), 45.0f, 0.1f, 100.0f);
+	Camera camera(WIDTH, HEIGHT, glm::vec3(0.0f, 0.0f, 2.0f), 80.0f, 0.1f, 100.0f);
 	Shader shader("assets/shaders/default-vert.glsl", "assets/shaders/default-frag.glsl");
+
+	glfwSetWindowUserPointer(window, &camera);
+	glfwSetScrollCallback(window, [](GLFWwindow* window, double xoffset, double yoffset)
+	{
+		Camera* camera = static_cast<Camera*>(glfwGetWindowUserPointer(window));
+		if(camera)
+			camera->HandleScroll(window, xoffset, yoffset);
+	});
 
 	VAO vao;
 	vao.Bind();
@@ -117,3 +125,4 @@ int main()
 	glfwTerminate();
 	return 0;
 }
+
