@@ -5,15 +5,22 @@ Camera::Camera(int width, int height, glm::vec3 pos, float FOV, float np, float 
 {
 }
 
-void Camera::Update(Shader& shader, const char* uniform)
+void Camera::UpdateMatrix()
 {
 	glm::mat4 view = glm::mat4(1.0f);
 	glm::mat4 projection = glm::mat4(1.0f);
-	
-	view = glm::lookAt(Position, Position + Orientation, Up);
-	projection = glm::perspective(glm::radians(FOVdeg), (float)(width / height), nearPlane, farPlane);
+	float aspect = static_cast<float>(width) / static_cast<float>(height);
 
-	glUniformMatrix4fv(glGetUniformLocation(shader.ProgramID, uniform), 1, GL_FALSE, glm::value_ptr(projection * view));
+
+	view = glm::lookAt(Position, Position + Orientation, Up);
+	projection = glm::perspective(glm::radians(FOVdeg), aspect, nearPlane, farPlane);
+
+	CameraMatrix = projection * view;
+}
+
+void Camera::Update(Shader& shader)
+{
+	glUniformMatrix4fv(glGetUniformLocation(shader.ProgramID, "camMatrix"), 1, GL_FALSE, glm::value_ptr(CameraMatrix));
 }
 
 void Camera::HandleInput(GLFWwindow* window)

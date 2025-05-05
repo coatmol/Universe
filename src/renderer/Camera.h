@@ -18,11 +18,13 @@ public:
 	glm::vec3 Position;
 	glm::vec3 Orientation = glm::vec3(0.0f, 0.0f, -1.0f);
 	glm::vec3 Up = glm::vec3(0.0f, 1.0f, 0.0f);
+	glm::mat4 CameraMatrix = glm::mat4(1.0f);
 
 	int width, height;
 	float FOVdeg, nearPlane, farPlane;
 
-	void Update(Shader& shader, const char* uniform);
+	void UpdateMatrix();
+	void Update(Shader& shader);
 	void HandleInput(GLFWwindow* window);
 	void HandleScroll(GLFWwindow* window, double xoffset, double yoffset);
 private:

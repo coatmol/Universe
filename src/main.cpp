@@ -33,6 +33,34 @@ GLuint indices[] =
 	3, 0, 4
 };
 
+GLfloat lightVertices[] =
+{ //     COORDINATES     //
+	-0.1f, -0.1f,  0.1f,
+	-0.1f, -0.1f, -0.1f,
+	 0.1f, -0.1f, -0.1f,
+	 0.1f, -0.1f,  0.1f,
+	-0.1f,  0.1f,  0.1f,
+	-0.1f,  0.1f, -0.1f,
+	 0.1f,  0.1f, -0.1f,
+	 0.1f,  0.1f,  0.1f
+};
+
+GLuint lightIndices[] =
+{
+	0, 1, 2,
+	0, 2, 3,
+	0, 4, 7,
+	0, 7, 3,
+	3, 7, 6,
+	3, 6, 2,
+	2, 6, 5,
+	2, 5, 1,
+	1, 5, 4,
+	1, 4, 0,
+	4, 5, 6,
+	4, 6, 7
+};
+
 int main()
 {
 	if (!glfwInit())
@@ -67,6 +95,7 @@ int main()
 
 	Camera camera(WIDTH, HEIGHT, glm::vec3(0.0f, 0.0f, 2.0f), 80.0f, 0.1f, 100.0f);
 	Shader shader("assets/shaders/default-vert.glsl", "assets/shaders/default-frag.glsl");
+	Shader lightShader("assets/shaders/light-vert.glsl", "assets/shaders/light-frag.glsl");
 
 	glfwSetWindowUserPointer(window, &camera);
 	glfwSetScrollCallback(window, [](GLFWwindow* window, double xoffset, double yoffset)
@@ -89,8 +118,33 @@ int main()
 	vbo.Unbind();
 	ebo.Unbind();
 
-	float rotation = 0.0f;
-	double prevTime = glfwGetTime();
+	VAO lightVAO;
+	lightVAO.Bind();
+
+	VBO lightVBO(lightVertices, sizeof(lightVertices));
+	EBO lightEBO(lightIndices, sizeof(lightIndices));
+
+	lightVAO.LinkAttrib(lightVBO, 0, 3, GL_FLOAT, 3 * sizeof(float), (void*)0);
+
+	lightVAO.Unbind();
+	lightVBO.Unbind();
+	lightEBO.Unbind();
+
+	glm::vec4 lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	glm::vec3 lightPos = glm::vec3(1, 1, 1);
+	glm::mat4 lightModel = glm::mat4(1.0f);
+	lightModel = glm::translate(lightModel, lightPos);
+
+	glm::vec3 pyramidPos = glm::vec3(0.5f, 0.5f, 0.5f);
+	glm::mat4 pyramidModel = glm::mat4(1.0f);
+	pyramidModel = glm::translate(pyramidModel, pyramidPos);
+
+	lightShader.Activate();
+	glUniformMatrix4fv(glGetUniformLocation(lightShader.ProgramID, "model"), 1, GL_FALSE, glm::value_ptr(lightModel));
+	glUniform4f(glGetUniformLocation(lightShader.ProgramID, "lightColor"), lightColor.x, lightColor.y, lightColor.z, lightColor.w);
+	shader.Activate();
+	glUniformMatrix4fv(glGetUniformLocation(shader.ProgramID, "model"), 1, GL_FALSE, glm::value_ptr(pyramidModel));
+
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -98,19 +152,18 @@ int main()
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glClearColor(0.0f, 0.0f, 0.0f, 255.0f);
+		camera.UpdateMatrix();
+
+
 		shader.Activate();
-
-		camera.Update(shader, "camMatrix");
-
-		double crntTime = glfwGetTime();
-		if (crntTime - prevTime >= 1/60)
-		{
-			rotation += 0.5f;
-			prevTime = crntTime;
-		}
-
+		camera.Update(shader);
 		vao.Bind();
 		glDrawElements(GL_TRIANGLES, sizeof(indices)/sizeof(int), GL_UNSIGNED_INT, 0);
+
+		lightShader.Activate();
+		camera.Update(lightShader);
+		lightVAO.Bind();
+		glDrawElements(GL_TRIANGLES, sizeof(lightIndices)/sizeof(int), GL_UNSIGNED_INT, 0);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
