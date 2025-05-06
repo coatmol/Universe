@@ -7,13 +7,8 @@ Camera::Camera(int width, int height, glm::vec3 pos, float FOV, float np, float 
 
 void Camera::UpdateMatrix()
 {
-	glm::mat4 view = glm::mat4(1.0f);
-	glm::mat4 projection = glm::mat4(1.0f);
-	float aspect = static_cast<float>(width) / static_cast<float>(height);
-
-
-	view = glm::lookAt(Position, Position + Orientation, Up);
-	projection = glm::perspective(glm::radians(FOVdeg), aspect, nearPlane, farPlane);
+	glm::mat4 view = GetViewMatrix();
+	glm::mat4 projection = GetProjectionMatrix();
 
 	CameraMatrix = projection * view;
 }
@@ -21,6 +16,11 @@ void Camera::UpdateMatrix()
 void Camera::Update(Shader& shader)
 {
 	glUniformMatrix4fv(glGetUniformLocation(shader.ProgramID, "camMatrix"), 1, GL_FALSE, glm::value_ptr(CameraMatrix));
+}
+
+void Camera::Update(Shader& shader, const char* uniform, glm::mat4 matrix)
+{
+	glUniformMatrix4fv(glGetUniformLocation(shader.ProgramID, uniform), 1, GL_FALSE, glm::value_ptr(matrix));
 }
 
 void Camera::HandleInput(GLFWwindow* window)
@@ -93,4 +93,15 @@ void Camera::HandleInput(GLFWwindow* window)
 void Camera::HandleScroll(GLFWwindow* window, double xoffset, double yoffset)
 {
 	FOVdeg = std::max(1.0f, std::min(80.0f, FOVdeg - (float)yoffset));
+}
+
+glm::mat4 Camera::GetViewMatrix()
+{
+	return glm::lookAt(Position, Position + Orientation, Up);
+}
+
+glm::mat4 Camera::GetProjectionMatrix()
+{
+	float aspect = static_cast<float>(width) / static_cast<float>(height);
+	return glm::perspective(glm::radians(FOVdeg), aspect, nearPlane, farPlane);;
 }

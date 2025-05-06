@@ -24,8 +24,17 @@ public:
 
 	void Accelerate(const glm::vec3& force);
 	void Render(Shader& shader, Camera& camera);
-	void Update();
+	glm::vec3 GetForce(Body& other);
+	void Update(float SIM_SPEED);
 	void Destroy();
+
+	bool operator==(const Body& other) const
+	{
+		return Position == other.Position &&
+			Velocity == other.Velocity &&
+			Mass == other.Mass &&
+			Radius == other.Radius;
+	}
 
 	glm::vec3 Position;
 	glm::vec3 Color;

@@ -7,7 +7,7 @@ Body::Body(glm::vec3 pos, glm::vec3 vel, float mass, float radius, glm::vec3 col
 		Radius(radius),
 		Color(color)
 {
-	Update();
+	Update(0);
 	GenerateVertices();
 
 	m_VAO = VAO();
@@ -30,11 +30,19 @@ void Body::Accelerate(const glm::vec3& force)
 	Velocity += acceleration;
 }
 
-void Body::Update()
+void Body::Update(float SIM_SPEED)
 {
-	Position += Velocity;
+	Position += Velocity * SIM_SPEED;
 	m_ModelMatrix = glm::mat4(1.0f);
 	m_ModelMatrix = glm::translate(m_ModelMatrix, Position);
+}
+
+glm::vec3 Body::GetForce(Body& other)  
+{  
+	const double G = (6.67430 * 1e-11); // Universal gravitation constant
+   glm::vec3 direction = glm::normalize(other.Position - Position);
+   float magnitude = static_cast<float>(G * ((Mass * other.Mass) / pow(glm::distance(Position, other.Position), 2)));
+   return direction * magnitude;
 }
 
 void Body::Render(Shader& shader, Camera& camera)

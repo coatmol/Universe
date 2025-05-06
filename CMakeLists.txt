@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.13)
 
 project(Universe)
 set(CMAKE_CXX_STANDARD 17)
-add_executable(Universe "vendor/glad.c" "src/main.cpp" "src/renderer/Shader.cpp" "src/renderer/Shader.h" "src/utils/File.h" "src/utils/File.cpp" "src/renderer/gl/VBO.h" "src/renderer/gl/VBO.cpp" "src/renderer/gl/EBO.h" "src/renderer/gl/EBO.cpp" "src/renderer/gl/VAO.h" "src/renderer/gl/VAO.cpp" "src/renderer/Camera.h" "src/renderer/Camera.cpp" "src/utils/Math.h" "src/engine/Body.cpp" "src/engine/Body.h")
+add_executable(Universe "vendor/glad.c" "src/main.cpp" "src/renderer/Shader.cpp" "src/renderer/Shader.h" "src/utils/File.h" "src/utils/File.cpp" "src/renderer/gl/VBO.h" "src/renderer/gl/VBO.cpp" "src/renderer/gl/EBO.h" "src/renderer/gl/EBO.cpp" "src/renderer/gl/VAO.h" "src/renderer/gl/VAO.cpp" "src/renderer/Camera.h" "src/renderer/Camera.cpp" "src/utils/Math.h" "src/engine/Body.cpp" "src/engine/Body.h" "src/engine/Skybox.h" "src/engine/Skybox.cpp" "src/renderer/stb_image_impl.cpp")
 
 include_directories("vendor/glad")
 include_directories("vendor/KHR")

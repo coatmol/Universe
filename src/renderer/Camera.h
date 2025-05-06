@@ -25,8 +25,12 @@ public:
 
 	void UpdateMatrix();
 	void Update(Shader& shader);
+	void Update(Shader& shader, const char* uniform, glm::mat4 matrix);
 	void HandleInput(GLFWwindow* window);
 	void HandleScroll(GLFWwindow* window, double xoffset, double yoffset);
+
+	glm::mat4 GetViewMatrix();
+	glm::mat4 GetProjectionMatrix();
 private:
 	float speed = 0.05f;
 	float sensitivity = 2.0f;

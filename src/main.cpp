@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <stb_image.h>
 
 #include "renderer/Shader.h"
 #include "renderer/gl/VAO.h"
@@ -12,6 +13,7 @@
 #include "renderer/Camera.h"
 
 #include "engine/Body.h"
+#include "engine/Skybox.h"
 
 int WIDTH = 1366;
 int HEIGHT = 720;
@@ -45,17 +47,53 @@ int main()
 		return -1;
 	}
 
+	glfwSwapInterval(1); // Enable vsync
 	glViewport(0, 0, WIDTH, HEIGHT);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 	glFrontFace(GL_CCW);
 
-	Camera camera(WIDTH, HEIGHT, glm::vec3(0.0f, 0.0f, 2.0f), 80.0f, 0.1f, 1000.0f);
+	Camera camera(WIDTH, HEIGHT, glm::vec3(1500.0f, 0.0f, 100.0f), 80.0f, 0.1f, 500000.0f);
 	Shader shader("assets/shaders/default-vert.glsl", "assets/shaders/default-frag.glsl");
 	Shader lightShader("assets/shaders/light-vert.glsl", "assets/shaders/light-frag.glsl");
+	Shader skyboxShader("assets/shaders/skybox-vert.glsl", "assets/shaders/skybox-frag.glsl");
 
-	Body body(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), 1.0f, 1.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-	Body body1(glm::vec3(0.0f, 5.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), 1.0f, 0.5f, glm::vec3(0.0f, 0.0f, 1.0f));
+	std::vector<std::string> faces = 
+	{
+		"assets/textures/skybox_right.png",
+		"assets/textures/skybox_left.png",
+		"assets/textures/skybox_up.png",
+		"assets/textures/skybox_down.png",
+		"assets/textures/skybox_front.png",
+		"assets/textures/skybox_back.png"
+	};
+
+	const float SCALE = 0.0001f;
+	const float SIM_SPEED = 10000;
+
+	std::vector<Body*> bodies = {
+		// POSITION, VELOCITY, MASS, RADIUS, COLOR
+		//SUN
+		new Body(glm::vec3(0.0f, 0.0f, 0.0f),
+			glm::vec3(0.0f, 0.0f, 0.0f),
+			333000000,
+			69634 * SCALE,
+			glm::vec3(1.0f, 0.0f, 0.0f)),
+		//EARTH
+		new Body(glm::vec3(15090000 * SCALE, 0.0f, 0.0f),
+			glm::vec3(0.0f, 0.0f, -1.0f * SCALE),
+			100,
+			6378000 * SCALE,
+			glm::vec3(0.0f, 0.0f, 1.0f)),
+		//MOON
+		new Body(glm::vec3((15090000 + 38440) * SCALE, 0.0f, 0.0f),
+			glm::vec3(0.0f, 0.0f, -0.001834f * SCALE),
+			1,
+			17370 * SCALE,
+			glm::vec3(1.0f, 1.0f, 1.0f))
+	};
+
+	Skybox skybox(faces);
 
 	glfwSetWindowUserPointer(window, &camera);
 	glfwSetScrollCallback(window, [](GLFWwindow* window, double xoffset, double yoffset)
@@ -73,17 +111,30 @@ int main()
 		glClearColor(0.0f, 0.0f, 0.0f, 255.0f);
 		camera.UpdateMatrix();
 
-		body.Update();
-		body.Render(shader, camera);
+		//skybox.Render(skyboxShader, camera);
 
-		body1.Update();
-		body1.Render(shader, camera);
+		for each(Body* body in bodies)
+		{
+			for each(Body* other in bodies)
+			{
+				if (body == other)
+					continue;
+				glm::vec3 force = body->GetForce(*other);
+				body->Accelerate(force);
+			}
+
+			body->Update(SIM_SPEED);
+			body->Render(shader, camera);
+		}
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
 
-	body.Destroy();
+	for each(Body* body in bodies)
+	{
+		body->Destroy();
+	}
 	shader.Delete();
 
 	glfwDestroyWindow(window);
