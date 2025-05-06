@@ -56,41 +56,36 @@ void Body::Render(Shader& shader, Camera& camera)
 
 void Body::GenerateVertices()
 {
-    m_Vertices.clear();
-    m_Indices.clear();
-	int stacks = 10;
-	int sectors = 10;
+   m_Vertices.clear();
+   m_Indices.clear();
+   int stacks = 10;
+   int sectors = 10;
 
-	// generate circumference points using integer steps
-	for (float i = 0.0f; i < stacks; ++i) {
-		float theta1 = (i / stacks) * glm::pi<float>();
-		float theta2 = (i + 1) / stacks * glm::pi<float>();
-		for (float j = 0.0f; j < sectors; ++j) {
-			float phi1 = j / sectors * 2 * glm::pi<float>();
-			float phi2 = (j + 1) / sectors * 2 * glm::pi<float>();
-			glm::vec3 v1 = sphericalToCartesian(Radius, theta1, phi1);
-			glm::vec3 v2 = sphericalToCartesian(Radius, theta1, phi2);
-			glm::vec3 v3 = sphericalToCartesian(Radius, theta2, phi1);
-			glm::vec3 v4 = sphericalToCartesian(Radius, theta2, phi2);
+   // generate circumference points using integer steps
+   for (float i = 0.0f; i < stacks; ++i) {
+       float theta1 = (i / stacks) * glm::pi<float>();
+       float theta2 = (i + 1) / stacks * glm::pi<float>();
+       for (float j = 0.0f; j < sectors; ++j) {
+           float phi1 = j / sectors * 2 * glm::pi<float>();
+           float phi2 = (j + 1) / sectors * 2 * glm::pi<float>();
+           glm::vec3 v1 = sphericalToCartesian(Radius, theta1, phi1);
+           glm::vec3 v2 = sphericalToCartesian(Radius, theta1, phi2);
+           glm::vec3 v3 = sphericalToCartesian(Radius, theta2, phi1);
+           glm::vec3 v4 = sphericalToCartesian(Radius, theta2, phi2);
 
-			uint32_t base = static_cast<uint32_t>(m_Vertices.size() / 6);
+           uint32_t base = static_cast<uint32_t>(m_Vertices.size() / 6);
 
-			// Triangle 1: v1-v2-v3
-			m_Vertices.insert(m_Vertices.end(), { v1.x, v1.y, v1.z, Color.r, Color.g, Color.b }); //      /|
-			m_Vertices.insert(m_Vertices.end(), { v2.x, v2.y, v2.z, Color.r, Color.g, Color.b }); //     / |
-			m_Vertices.insert(m_Vertices.end(), { v3.x, v3.y, v3.z, Color.r, Color.g, Color.b }); //    /__|
+           m_Vertices.insert(m_Vertices.end(), { v1.x, v1.y, v1.z, Color.r, Color.g, Color.b }); 
+           m_Vertices.insert(m_Vertices.end(), { v2.x, v2.y, v2.z, Color.r, Color.g, Color.b });      
+           m_Vertices.insert(m_Vertices.end(), { v3.x, v3.y, v3.z, Color.r, Color.g, Color.b });
+           m_Vertices.insert(m_Vertices.end(), { v4.x, v4.y, v4.z, Color.r, Color.g, Color.b });
 
-			// Triangle 2: v2-v4-v3
-			m_Vertices.insert(m_Vertices.end(), { v2.x, v2.y, v2.z, Color.r, Color.g, Color.b });
-			m_Vertices.insert(m_Vertices.end(), { v4.x, v4.y, v4.z, Color.r, Color.g, Color.b });
-			m_Vertices.insert(m_Vertices.end(), { v3.x, v3.y, v3.z, Color.r, Color.g, Color.b });
-
-			m_Indices.insert(m_Indices.end(), {
-				base,     base + 1, base + 2,   // tri 1
-				base + 3, base + 4, base + 5    // tri 2
-			});
-		}
-	}
+           m_Indices.insert(m_Indices.end(), {
+               base, base + 1, base + 2, // First triangle
+               base + 2, base + 1, base + 3  // Second triangle
+           });
+       }
+   }
 }
 
 

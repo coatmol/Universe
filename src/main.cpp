@@ -76,14 +76,14 @@ int main()
 		//SUN
 		new Body(glm::vec3(0.0f, 0.0f, 0.0f),
 			glm::vec3(0.0f, 0.0f, 0.0f),
-			333000000,
-			69634 * SCALE,
+			333000,
+			696340 * SCALE,
 			glm::vec3(1.0f, 0.0f, 0.0f)),
 		//EARTH
 		new Body(glm::vec3(15090000 * SCALE, 0.0f, 0.0f),
-			glm::vec3(0.0f, 0.0f, -1.0f * SCALE),
+			glm::vec3(0.0f, 0.0f, 0.0f),
 			100,
-			6378000 * SCALE,
+			63780 * SCALE,
 			glm::vec3(0.0f, 0.0f, 1.0f)),
 		//MOON
 		new Body(glm::vec3((15090000 + 38440) * SCALE, 0.0f, 0.0f),
