@@ -16,8 +16,9 @@ Body::Body(glm::vec3 pos, glm::vec3 vel, float mass, float radius, glm::vec3 col
 	m_VBO = new VBO(m_Vertices.data(), GLsizeiptr(m_Vertices.size() * sizeof(GLfloat)));
 	m_EBO = new EBO(m_Indices.data(), GLsizeiptr(m_Indices.size() * sizeof(GLuint)));
 
-	m_VAO.LinkAttrib(*m_VBO, 0, 3, GL_FLOAT, 6 * sizeof(float), (void*)0);
-	m_VAO.LinkAttrib(*m_VBO, 1, 3, GL_FLOAT, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	m_VAO.LinkAttrib(*m_VBO, 0, 3, GL_FLOAT, 9 * sizeof(float), (void*)0);
+	m_VAO.LinkAttrib(*m_VBO, 1, 3, GL_FLOAT, 9 * sizeof(float), (void*)(3 * sizeof(float)));
+	m_VAO.LinkAttrib(*m_VBO, 2, 3, GL_FLOAT, 9 * sizeof(float), (void*)(6 * sizeof(float)));
 
 	m_VAO.Unbind();
 	m_VBO->Unbind();
@@ -73,12 +74,16 @@ void Body::GenerateVertices()
            glm::vec3 v3 = sphericalToCartesian(Radius, theta2, phi1);
            glm::vec3 v4 = sphericalToCartesian(Radius, theta2, phi2);
 
-           uint32_t base = static_cast<uint32_t>(m_Vertices.size() / 6);
+           uint32_t base = static_cast<uint32_t>(m_Vertices.size() / 9);
+		   glm::vec3 n1 = glm::normalize(v1);
+		   glm::vec3 n2 = glm::normalize(v2);
+		   glm::vec3 n3 = glm::normalize(v3);
+		   glm::vec3 n4 = glm::normalize(v4);
 
-           m_Vertices.insert(m_Vertices.end(), { v1.x, v1.y, v1.z, Color.r, Color.g, Color.b }); 
-           m_Vertices.insert(m_Vertices.end(), { v2.x, v2.y, v2.z, Color.r, Color.g, Color.b });      
-           m_Vertices.insert(m_Vertices.end(), { v3.x, v3.y, v3.z, Color.r, Color.g, Color.b });
-           m_Vertices.insert(m_Vertices.end(), { v4.x, v4.y, v4.z, Color.r, Color.g, Color.b });
+           m_Vertices.insert(m_Vertices.end(), { v1.x, v1.y, v1.z, Color.r, Color.g, Color.b, n1.x, n1.y, n1.z });
+           m_Vertices.insert(m_Vertices.end(), { v2.x, v2.y, v2.z, Color.r, Color.g, Color.b, n2.x, n2.y, n2.z });
+           m_Vertices.insert(m_Vertices.end(), { v3.x, v3.y, v3.z, Color.r, Color.g, Color.b, n3.x, n3.y, n3.z });
+           m_Vertices.insert(m_Vertices.end(), { v4.x, v4.y, v4.z, Color.r, Color.g, Color.b, n4.x, n4.y, n4.z });
 
            m_Indices.insert(m_Indices.end(), {
                base, base + 1, base + 2, // First triangle

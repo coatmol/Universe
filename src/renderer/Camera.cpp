@@ -16,11 +16,13 @@ void Camera::UpdateMatrix()
 void Camera::Update(Shader& shader)
 {
 	glUniformMatrix4fv(glGetUniformLocation(shader.ProgramID, "camMatrix"), 1, GL_FALSE, glm::value_ptr(CameraMatrix));
+	glUniformMatrix4fv(glGetUniformLocation(shader.ProgramID, "viewPos"), 1, GL_FALSE, glm::value_ptr(Position));
 }
 
 void Camera::Update(Shader& shader, const char* uniform, glm::mat4 matrix)
 {
 	glUniformMatrix4fv(glGetUniformLocation(shader.ProgramID, uniform), 1, GL_FALSE, glm::value_ptr(matrix));
+	glUniformMatrix4fv(glGetUniformLocation(shader.ProgramID, "viewPos"), 1, GL_FALSE, glm::value_ptr(Position));
 }
 
 void Camera::HandleInput(GLFWwindow* window)
