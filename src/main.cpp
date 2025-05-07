@@ -53,7 +53,7 @@ int main()
 	glEnable(GL_CULL_FACE);
 	glFrontFace(GL_CCW);
 
-	Camera camera(WIDTH, HEIGHT, glm::vec3(1500.0f, 0.0f, 100.0f), 80.0f, 0.1f, 500000.0f);
+	Camera camera(WIDTH, HEIGHT, glm::vec3(0.0f, 0.0f, 10.0f), 80.0f, 0.1f, 500000.0f);
 	Shader shader("assets/shaders/default-vert.glsl", "assets/shaders/default-frag.glsl");
 	Shader lightShader("assets/shaders/light-vert.glsl", "assets/shaders/light-frag.glsl");
 	Shader skyboxShader("assets/shaders/skybox-vert.glsl", "assets/shaders/skybox-frag.glsl");
@@ -68,29 +68,46 @@ int main()
 		"assets/textures/skybox_back.png"
 	};
 
+
 	const float SCALE = 0.0001f;
-	const float SIM_SPEED = 10000;
+	const float MASS_SCALE = 1e24f;
+	const float DIST_SCALE = 1e6f;
+	const float SIM_SPEED = 10000000;
+
+	float sunMass = 1.989e30f / MASS_SCALE;
+
+	const double G = 6.67430e-11;
+	double   r_phys = 150.96e9;
+	double v_phys = sqrt(G * sunMass / r_phys);
+
+	float earthMass = 5.972e24f / MASS_SCALE;
+	float earthDist = 150.96e6f / DIST_SCALE;
+	float v_sim_per_s = static_cast<float>(v_phys / DIST_SCALE);
+
+	float moonMass = 7.34767309f / MASS_SCALE;
+	float moonDist = (384400.f / DIST_SCALE) + earthDist;
 
 	std::vector<Body*> bodies = {
 		// POSITION, VELOCITY, MASS, RADIUS, COLOR
 		//SUN
 		new Body(glm::vec3(0.0f, 0.0f, 0.0f),
 			glm::vec3(0.0f, 0.0f, 0.0f),
-			333000,
-			696340 * SCALE,
-			glm::vec3(1.0f, 0.0f, 0.0f)),
+			sunMass,
+			10.9f,
+			glm::vec3(1.0f, 0.0f, 0.0f),
+			true),
 		//EARTH
-		new Body(glm::vec3(15090000 * SCALE, 0.0f, 0.0f),
-			glm::vec3(0.0f, 0.0f, 0.0f),
-			100,
-			63780 * SCALE,
+		new Body(glm::vec3(earthDist, 0.0f, 0.0f),
+			glm::vec3(0.0f, 0.0f, -v_sim_per_s),
+			earthMass,
+			0.1f,
 			glm::vec3(0.0f, 0.0f, 1.0f)),
 		//MOON
-		new Body(glm::vec3((15090000 + 38440) * SCALE, 0.0f, 0.0f),
+		/*new Body(glm::vec3(moonDist, 0.0f, 0.0f),
 			glm::vec3(0.0f, 0.0f, -0.001834f * SCALE),
-			1,
-			17370 * SCALE,
-			glm::vec3(1.0f, 1.0f, 1.0f))
+			moonMass,
+			0.27f,
+			glm::vec3(1.0f, 1.0f, 1.0f))*/
 	};
 
 	Skybox skybox(faces);
@@ -103,9 +120,18 @@ int main()
 			camera->HandleScroll(window, xoffset, yoffset);
 	});
 
+	double currentFrame = glfwGetTime();
+	double lastFrame = currentFrame;
+	double deltaTime = 0;
+
 	while (!glfwWindowShouldClose(window))
 	{
-		camera.HandleInput(window);
+		currentFrame = glfwGetTime();
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
+		std::cout << "dt: " << deltaTime << std::endl;
+
+		camera.HandleInput(window, deltaTime);
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glClearColor(0.0f, 0.0f, 0.0f, 255.0f);
@@ -120,11 +146,11 @@ int main()
 				if (body == other)
 					continue;
 				glm::vec3 force = body->GetForce(*other);
-				body->Accelerate(force);
+				body->Accelerate(force, SIM_SPEED * deltaTime);
 			}
 
-			body->Update(SIM_SPEED);
-			body->Render(shader, camera);
+			body->Update(SIM_SPEED * deltaTime);
+			body->Render(body->Glows ? lightShader : shader, camera);
 		}
 
 		glfwSwapBuffers(window);

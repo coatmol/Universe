@@ -20,9 +20,9 @@
 class Body
 {
 public:
-	Body(glm::vec3 pos, glm::vec3 vel, float mass, float radius, glm::vec3 Color=glm::vec3(1,1,1));
+	Body(glm::vec3 pos, glm::vec3 vel, float mass, float radius, glm::vec3 color=glm::vec3(1,1,1), bool glows=false);
 
-	void Accelerate(const glm::vec3& force);
+	void Accelerate(const glm::vec3& force, float SIM_SPEED);
 	void Render(Shader& shader, Camera& camera);
 	glm::vec3 GetForce(Body& other);
 	void Update(float SIM_SPEED);
@@ -40,6 +40,7 @@ public:
 	glm::vec3 Color;
 	glm::vec3 Velocity;
 	float Mass, Radius;
+	bool Glows;
 private:
 	glm::mat4 m_ModelMatrix = glm::mat4(1.0f);
 	VAO m_VAO;

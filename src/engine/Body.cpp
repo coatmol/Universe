@@ -1,11 +1,12 @@
 #include "Body.h"
 
-Body::Body(glm::vec3 pos, glm::vec3 vel, float mass, float radius, glm::vec3 color)
+Body::Body(glm::vec3 pos, glm::vec3 vel, float mass, float radius, glm::vec3 color, bool glows)
 	: Position(pos),
 		Velocity(vel),
 		Mass(mass),
 		Radius(radius),
-		Color(color)
+		Color(color),
+		Glows(glows)
 {
 	Update(0);
 	GenerateVertices();
@@ -25,10 +26,10 @@ Body::Body(glm::vec3 pos, glm::vec3 vel, float mass, float radius, glm::vec3 col
 	m_EBO->Unbind();
 }
 
-void Body::Accelerate(const glm::vec3& force)
+void Body::Accelerate(const glm::vec3& force, float SIM_SPEED)
 {
 	glm::vec3 acceleration = force / Mass;
-	Velocity += acceleration;
+	Velocity += acceleration * SIM_SPEED;
 }
 
 void Body::Update(float SIM_SPEED)
@@ -40,10 +41,10 @@ void Body::Update(float SIM_SPEED)
 
 glm::vec3 Body::GetForce(Body& other)  
 {  
-	const double G = (6.67430 * 1e-11); // Universal gravitation constant
-   glm::vec3 direction = glm::normalize(other.Position - Position);
-   float magnitude = static_cast<float>(G * ((Mass * other.Mass) / pow(glm::distance(Position, other.Position), 2)));
-   return direction * magnitude;
+	const double G = (6.67430e-11) * ((1e6 * 1e6 * 1e6) / 1e24); // Universal gravitation constant
+	glm::vec3 direction = glm::normalize(other.Position - Position);
+	float magnitude = static_cast<float>(G * ((Mass * other.Mass) / pow(glm::distance(Position, other.Position), 2)));
+	return direction * magnitude;
 }
 
 void Body::Render(Shader& shader, Camera& camera)
