@@ -1,13 +1,15 @@
 #include "Body.h"
 
-Body::Body(glm::vec3 pos, glm::vec3 vel, float mass, float radius, glm::vec3 color, bool glows)
+Body::Body(glm::vec3 pos, glm::vec3 vel, double mass, float density, glm::vec3 color, bool glows)
 	: Position(pos),
 		Velocity(vel),
 		Mass(mass),
-		Radius(radius),
+		Density(density),
 		Color(color),
 		Glows(glows)
 {
+	this->Radius = pow(((3 * this->Mass / this->Density) / (4 * 3.14159265359)), (1.0f / 3.0f)) / 30000;
+
 	Update(0);
 	GenerateVertices();
 
@@ -28,7 +30,7 @@ Body::Body(glm::vec3 pos, glm::vec3 vel, float mass, float radius, glm::vec3 col
 
 void Body::Accelerate(const glm::vec3& force, float SIM_SPEED)
 {
-	glm::vec3 acceleration = force / Mass;
+	glm::vec3 acceleration = force / static_cast<float>(Mass);
 	Velocity += acceleration * SIM_SPEED;
 }
 
@@ -39,9 +41,17 @@ void Body::Update(float SIM_SPEED)
 	m_ModelMatrix = glm::translate(m_ModelMatrix, Position);
 }
 
+void Body::RefreshMesh()
+{
+	this->Radius = pow(((3 * this->Mass / this->Density) / (4 * 3.14159265359)), (1.0f / 3.0f)) / 30000;
+	GenerateVertices();
+	m_VBO->Update(m_Vertices.data(), GLsizeiptr(m_Vertices.size() * sizeof(GLfloat)));
+	m_EBO->Update(m_Indices.data(), GLsizeiptr(m_Indices.size() * sizeof(GLuint)));
+}
+
 glm::vec3 Body::GetForce(Body& other)  
 {  
-	const double G = (6.67430e-11) * ((1e6 * 1e6 * 1e6) / 1e24); // Universal gravitation constant
+	const double G = 6.67430e-11; // Universal gravitation constant
 	glm::vec3 direction = glm::normalize(other.Position - Position);
 	float magnitude = static_cast<float>(G * ((Mass * other.Mass) / pow(glm::distance(Position, other.Position), 2)));
 	return direction * magnitude;

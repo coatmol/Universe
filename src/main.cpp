@@ -6,6 +6,10 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <stb_image.h>
 
+#include <imgui.h>
+#include <imgui/backends/imgui_impl_glfw.h>
+#include <imgui/backends/imgui_impl_opengl3.h>
+
 #include "renderer/Shader.h"
 #include "renderer/gl/VAO.h"
 #include "renderer/gl/VBO.h"
@@ -53,7 +57,17 @@ int main()
 	glEnable(GL_CULL_FACE);
 	glFrontFace(GL_CCW);
 
-	Camera camera(WIDTH, HEIGHT, glm::vec3(0.0f, 0.0f, 10.0f), 80.0f, 0.1f, 500000.0f);
+	bool toolActive = true;
+
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO();
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+	// Setup Platform/Renderer backends
+	ImGui_ImplGlfw_InitForOpenGL(window, true);          // Second param install_callback=true will install GLFW callbacks and chain to existing ones.
+	ImGui_ImplOpenGL3_Init();
+
+	Camera camera(WIDTH, HEIGHT, glm::vec3(600.0f, 0.0f, 150.0f), 80.0f, 0.1f, 500000.0f);
 	Shader shader("assets/shaders/default-vert.glsl", "assets/shaders/default-frag.glsl");
 	Shader lightShader("assets/shaders/light-vert.glsl", "assets/shaders/light-frag.glsl");
 	Shader skyboxShader("assets/shaders/skybox-vert.glsl", "assets/shaders/skybox-frag.glsl");
@@ -69,46 +83,81 @@ int main()
 	};
 
 
-	const float SCALE = 0.0001f;
-	const float MASS_SCALE = 1e24f;
-	const float DIST_SCALE = 1e6f;
-	const float SIM_SPEED = 10000000;
-
-	float sunMass = 1.989e30f / MASS_SCALE;
-
-	const double G = 6.67430e-11;
-	double   r_phys = 150.96e9;
-	double v_phys = sqrt(G * sunMass / r_phys);
-
-	float earthMass = 5.972e24f / MASS_SCALE;
-	float earthDist = 150.96e6f / DIST_SCALE;
-	float v_sim_per_s = static_cast<float>(v_phys / DIST_SCALE);
-
-	float moonMass = 7.34767309f / MASS_SCALE;
-	float moonDist = (384400.f / DIST_SCALE) + earthDist;
+	float SIM_SPEED = 0.00001f;
 
 	std::vector<Body*> bodies = {
 		// POSITION, VELOCITY, MASS, RADIUS, COLOR
 		//SUN
 		new Body(glm::vec3(0.0f, 0.0f, 0.0f),
 			glm::vec3(0.0f, 0.0f, 0.0f),
-			sunMass,
-			10.9f,
+			1.989e25,
+			1414,
 			glm::vec3(1.0f, 0.0f, 0.0f),
 			true),
-		//EARTH
-		new Body(glm::vec3(earthDist, 0.0f, 0.0f),
-			glm::vec3(0.0f, 0.0f, -v_sim_per_s),
-			earthMass,
-			0.1f,
-			glm::vec3(0.0f, 0.0f, 1.0f)),
-		//MOON
-		/*new Body(glm::vec3(moonDist, 0.0f, 0.0f),
-			glm::vec3(0.0f, 0.0f, -0.001834f * SCALE),
-			moonMass,
-			0.27f,
-			glm::vec3(1.0f, 1.0f, 1.0f))*/
+		//mars
+		new Body(glm::vec3(-3000.0f, 650.0f, 0.0f),
+			glm::vec3(0.0f, 0.0f, 500.0f),
+			5.97219e23,
+			5515,
+			glm::vec3(1.0f, 0.25f, 0.56f)),
+		//earth
+		new Body(glm::vec3(5000.0f, 650.0f, 0.0f),
+			glm::vec3(0.0f, 0.0f, -500.0f),
+			5.97219e23,
+			5515,
+			glm::vec3(0.0f, 1.0f, 1.0f)),
+		//moon
+		new Body(glm::vec3(5250.0f, 650.0f, 0.0f),
+			glm::vec3(0.0f, 0.0f, -50.0f),
+			5.97219e21,
+			5515,
+			glm::vec3(1.0f, 1.0f, 1.0f)),
+
+		//Jupiter
+		new Body(glm::vec3(0.0f, 500.0f, 9000.0f),
+			glm::vec3(-500.0f, 50.0f, 0.0f),
+			5.97219*pow(10, 23.5),
+			5515,
+			glm::vec3(1.0f, 0.5f, 0.15f)),
+		new Body(glm::vec3(0.0f, 550.0f, 9500.0f),
+			glm::vec3(0.0f, 0.0f, -50.0f),
+			5.97219e21,
+			5515,
+			glm::vec3(1.0f, 1.0f, 1.0f)),
+		new Body(glm::vec3(0.0f, 450.0f, 8500.0f),
+			glm::vec3(0.0f, 0.0f, -50.0f),
+			5.97219e21,
+			5515,
+			glm::vec3(1.0f, 1.0f, 1.0f)),
+		new Body(glm::vec3(100.0f, 500.0f, 9000.0f),
+			glm::vec3(50.0f, 0.0f, 0.0f),
+			5.97219e21,
+			5515,
+			glm::vec3(1.0f, 1.0f, 1.0f)),
+
+		//Neptune
+		new Body(glm::vec3(0.0f, -500.0f, -10500.0f),
+			glm::vec3(-350.0f, 50.0f, 0.0f),
+			5.97219*pow(10, 23.5),
+			5515,
+			glm::vec3(0.35f, 0.5f, 0.15f)),
+		new Body(glm::vec3(350.0f, -450.0f, -10500.0f),
+			glm::vec3(0.0f, 0.0f, -550.0f),
+			5.97219e21,
+			5515,
+			glm::vec3(1.0f, 1.0f, 1.0f)),
+		new Body(glm::vec3(-350.0f, 450.0f, -10500.0f),
+			glm::vec3(0.0f, 0.0f, -550.0f),
+			5.97219e21,
+			5515,
+			glm::vec3(1.0f, 1.0f, 1.0f)),
+		new Body(glm::vec3(0.0f, -450.0f, -10500.0f),
+			glm::vec3(-550.0f, 0.0f, 0.0f),
+			5.97219e21,
+			5515,
+			glm::vec3(1.0f, 1.0f, 1.0f)	),
 	};
+	int selectedBody = -1;
 
 	Skybox skybox(faces);
 
@@ -129,7 +178,6 @@ int main()
 		currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
-		std::cout << "dt: " << deltaTime << std::endl;
 
 		camera.HandleInput(window, deltaTime);
 
@@ -141,17 +189,72 @@ int main()
 
 		for each(Body* body in bodies)
 		{
-			for each(Body* other in bodies)
+			for each(Body * other in bodies)
 			{
 				if (body == other)
 					continue;
 				glm::vec3 force = body->GetForce(*other);
-				body->Accelerate(force, SIM_SPEED * deltaTime);
+				body->Accelerate(force, SIM_SPEED);
 			}
 
-			body->Update(SIM_SPEED * deltaTime);
+			body->Update(SIM_SPEED);
 			body->Render(body->Glows ? lightShader : shader, camera);
 		}
+
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+		
+		ImGui::Begin("Tools", &toolActive, 0);
+		ImGui::InputFloat("SimulationSpeed", &SIM_SPEED);
+		ImGui::SliderFloat3("Camera Position", glm::value_ptr(camera.Position), -1e3, 1e3);
+
+		if (selectedBody == -1)
+		{
+			ImGui::Separator();
+			if (ImGui::Button("New Body"))
+				bodies.push_back(new Body(camera.Position + camera.Orientation * 50.0f, glm::vec3(), 1e20, 1411));
+			ImGui::Separator();
+			ImGui::BeginChild("Scrolling");
+			for (int i = 0; i < bodies.size(); i++)
+			{
+				std::string buttonLabel = "Body #" + std::to_string(i);
+				if (ImGui::Button(buttonLabel.c_str()))
+					selectedBody = i;
+			}
+			ImGui::EndChild();
+		}
+		else {
+			ImGui::Separator();
+			ImGui::Text("Body Properties");
+			ImGui::Text("Body #%d", selectedBody);
+
+			ImGui::InputFloat3("Position", glm::value_ptr(bodies[selectedBody]->Position));
+			ImGui::InputFloat3("Velocity", glm::value_ptr(bodies[selectedBody]->Velocity));
+			if (ImGui::ColorEdit3("Color", glm::value_ptr(bodies[selectedBody]->Color)))
+				bodies[selectedBody]->RefreshMesh();
+
+			ImGui::InputDouble("Mass", &bodies[selectedBody]->Mass);
+			if (ImGui::InputFloat("Density", &bodies[selectedBody]->Density, 1, 10))
+				bodies[selectedBody]->RefreshMesh();
+			ImGui::Checkbox("Glows", &bodies[selectedBody]->Glows);
+
+			ImGui::Separator();
+
+			if (ImGui::Button("Refresh Mesh"))
+				bodies[selectedBody]->RefreshMesh();
+			if (ImGui::Button("Look at"))
+				camera.LookAt(bodies[selectedBody]->Position);
+			if (ImGui::Button("Go to"))
+				camera.Position = bodies[selectedBody]->Position + bodies[selectedBody]->Radius;
+			if (ImGui::Button("Deselect"))
+				selectedBody = -1;
+		}
+
+		ImGui::End();
+
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -163,6 +266,9 @@ int main()
 	}
 	shader.Delete();
 
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
 	glfwDestroyWindow(window);
 	glfwTerminate();
 	return 0;

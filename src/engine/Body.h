@@ -20,12 +20,13 @@
 class Body
 {
 public:
-	Body(glm::vec3 pos, glm::vec3 vel, float mass, float radius, glm::vec3 color=glm::vec3(1,1,1), bool glows=false);
+	Body(glm::vec3 pos, glm::vec3 vel, double mass, float density, glm::vec3 color=glm::vec3(1,1,1), bool glows=false);
 
 	void Accelerate(const glm::vec3& force, float SIM_SPEED);
 	void Render(Shader& shader, Camera& camera);
 	glm::vec3 GetForce(Body& other);
 	void Update(float SIM_SPEED);
+	void RefreshMesh();
 	void Destroy();
 
 	bool operator==(const Body& other) const
@@ -39,7 +40,8 @@ public:
 	glm::vec3 Position;
 	glm::vec3 Color;
 	glm::vec3 Velocity;
-	float Mass, Radius;
+	double Mass;
+	float Radius, Density;
 	bool Glows;
 private:
 	glm::mat4 m_ModelMatrix = glm::mat4(1.0f);

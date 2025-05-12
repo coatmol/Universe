@@ -20,6 +20,7 @@ void VBO::Bind()
 
 void VBO::Update(GLfloat* vertices, GLsizeiptr size)
 {
+	Bind();
 	glBufferSubData(GL_ARRAY_BUFFER, 0, size, vertices);
 }
 

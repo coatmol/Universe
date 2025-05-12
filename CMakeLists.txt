@@ -14,6 +14,19 @@ target_link_libraries(Universe PRIVATE glfw)
 add_subdirectory("vendor/glm")
 target_link_libraries(Universe PRIVATE glm)
 
+include_directories("vendor/imgui" "vendor/imgui/backends")
+target_sources(
+    Universe
+    PRIVATE
+    "vendor/imgui/imgui.cpp"
+    "vendor/imgui/imgui_demo.cpp"
+    "vendor/imgui/imgui_draw.cpp"
+    "vendor/imgui/imgui_tables.cpp"
+    "vendor/imgui/imgui_widgets.cpp"
+    "vendor/imgui/backends/imgui_impl_glfw.cpp"
+    "vendor/imgui/backends/imgui_impl_opengl3.cpp"
+)
+
 find_package(OpenGL REQUIRED)
 target_link_libraries(Universe PRIVATE OpenGL::GL)
 

@@ -53,11 +53,11 @@ void Camera::HandleInput(GLFWwindow* window, float dt)
 	}
 	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
 	{
-		speed = 40.f;
+		speed = 400.f;
 	}
 	else if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE)
 	{
-		speed = 5.0f;
+		speed = 50.0f;
 	}
 
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2) == GLFW_PRESS)
@@ -95,6 +95,11 @@ void Camera::HandleInput(GLFWwindow* window, float dt)
 void Camera::HandleScroll(GLFWwindow* window, double xoffset, double yoffset)
 {
 	FOVdeg = std::max(1.0f, std::min(80.0f, FOVdeg - (float)yoffset));
+}
+
+void Camera::LookAt(glm::vec3 target)
+{
+    Orientation = glm::normalize(target - Position);
 }
 
 glm::mat4 Camera::GetViewMatrix()

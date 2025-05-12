@@ -17,6 +17,12 @@ void EBO::Unbind()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
+void EBO::Update(GLuint* vertices, GLsizeiptr size)
+{
+	Bind();
+	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, size, vertices);
+}
+
 void EBO::Delete()
 {
 	glDeleteBuffers(1, &ID);

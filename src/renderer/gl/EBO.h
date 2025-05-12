@@ -9,6 +9,7 @@ public:
 	
 	void Bind();
 	void Unbind();
+	void Update(GLuint* vertices, GLsizeiptr size);
 	void Delete();
 
 	GLuint ID;

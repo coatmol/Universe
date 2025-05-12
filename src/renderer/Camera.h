@@ -29,10 +29,12 @@ public:
 	void HandleInput(GLFWwindow* window, float dt);
 	void HandleScroll(GLFWwindow* window, double xoffset, double yoffset);
 
+	void LookAt(glm::vec3 target);
+
 	glm::mat4 GetViewMatrix();
 	glm::mat4 GetProjectionMatrix();
 private:
-	float speed = 5.0f;
+	float speed = 50.0f;
 	float sensitivity = 100.0f;
 
 	bool firstClick = true;
