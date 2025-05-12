@@ -85,78 +85,7 @@ int main()
 
 	float SIM_SPEED = 0.00001f;
 
-	std::vector<Body*> bodies = {
-		// POSITION, VELOCITY, MASS, RADIUS, COLOR
-		//SUN
-		new Body(glm::vec3(0.0f, 0.0f, 0.0f),
-			glm::vec3(0.0f, 0.0f, 0.0f),
-			1.989e25,
-			1414,
-			glm::vec3(1.0f, 0.0f, 0.0f),
-			true),
-		//mars
-		new Body(glm::vec3(-3000.0f, 650.0f, 0.0f),
-			glm::vec3(0.0f, 0.0f, 500.0f),
-			5.97219e23,
-			5515,
-			glm::vec3(1.0f, 0.25f, 0.56f)),
-		//earth
-		new Body(glm::vec3(5000.0f, 650.0f, 0.0f),
-			glm::vec3(0.0f, 0.0f, -500.0f),
-			5.97219e23,
-			5515,
-			glm::vec3(0.0f, 1.0f, 1.0f)),
-		//moon
-		new Body(glm::vec3(5250.0f, 650.0f, 0.0f),
-			glm::vec3(0.0f, 0.0f, -50.0f),
-			5.97219e21,
-			5515,
-			glm::vec3(1.0f, 1.0f, 1.0f)),
-
-		//Jupiter
-		new Body(glm::vec3(0.0f, 500.0f, 9000.0f),
-			glm::vec3(-500.0f, 50.0f, 0.0f),
-			5.97219*pow(10, 23.5),
-			5515,
-			glm::vec3(1.0f, 0.5f, 0.15f)),
-		new Body(glm::vec3(0.0f, 550.0f, 9500.0f),
-			glm::vec3(0.0f, 0.0f, -50.0f),
-			5.97219e21,
-			5515,
-			glm::vec3(1.0f, 1.0f, 1.0f)),
-		new Body(glm::vec3(0.0f, 450.0f, 8500.0f),
-			glm::vec3(0.0f, 0.0f, -50.0f),
-			5.97219e21,
-			5515,
-			glm::vec3(1.0f, 1.0f, 1.0f)),
-		new Body(glm::vec3(100.0f, 500.0f, 9000.0f),
-			glm::vec3(50.0f, 0.0f, 0.0f),
-			5.97219e21,
-			5515,
-			glm::vec3(1.0f, 1.0f, 1.0f)),
-
-		//Neptune
-		new Body(glm::vec3(0.0f, -500.0f, -10500.0f),
-			glm::vec3(-350.0f, 50.0f, 0.0f),
-			5.97219*pow(10, 23.5),
-			5515,
-			glm::vec3(0.35f, 0.5f, 0.15f)),
-		new Body(glm::vec3(350.0f, -450.0f, -10500.0f),
-			glm::vec3(0.0f, 0.0f, -550.0f),
-			5.97219e21,
-			5515,
-			glm::vec3(1.0f, 1.0f, 1.0f)),
-		new Body(glm::vec3(-350.0f, 450.0f, -10500.0f),
-			glm::vec3(0.0f, 0.0f, -550.0f),
-			5.97219e21,
-			5515,
-			glm::vec3(1.0f, 1.0f, 1.0f)),
-		new Body(glm::vec3(0.0f, -450.0f, -10500.0f),
-			glm::vec3(-550.0f, 0.0f, 0.0f),
-			5.97219e21,
-			5515,
-			glm::vec3(1.0f, 1.0f, 1.0f)	),
-	};
+	std::vector<Body*> bodies = {};
 	int selectedBody = -1;
 
 	Skybox skybox(faces);
@@ -201,15 +130,101 @@ int main()
 			body->Render(body->Glows ? lightShader : shader, camera);
 		}
 
+#pragma region ImGui
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 		
-		ImGui::Begin("Tools", &toolActive, 0);
+		ImGui::Begin("Tools", &toolActive, ImGuiWindowFlags_MenuBar);
+
+		if (ImGui::BeginMenuBar())
+		{
+			if (ImGui::BeginMenu("Presets"))
+			{
+				if (ImGui::MenuItem("Solar System"))
+					bodies = {
+						// POSITION, VELOCITY, MASS, RADIUS, COLOR
+						//SUN
+						new Body(glm::vec3(0.0f, 0.0f, 0.0f),
+							glm::vec3(0.0f, 0.0f, 0.0f),
+							1.989e25,
+							1414,
+							glm::vec3(1.0f, 0.0f, 0.0f),
+							true),
+							//mars
+							new Body(glm::vec3(-3000.0f, 650.0f, 0.0f),
+								glm::vec3(0.0f, 0.0f, 500.0f),
+								5.97219e23,
+								5515,
+								glm::vec3(1.0f, 0.25f, 0.56f)),
+								//earth
+								new Body(glm::vec3(5000.0f, 650.0f, 0.0f),
+									glm::vec3(0.0f, 0.0f, -500.0f),
+									5.97219e23,
+									5515,
+									glm::vec3(0.0f, 1.0f, 1.0f)),
+									//moon
+									new Body(glm::vec3(5250.0f, 650.0f, 0.0f),
+										glm::vec3(0.0f, 0.0f, -50.0f),
+										5.97219e21,
+										5515,
+										glm::vec3(1.0f, 1.0f, 1.0f)),
+
+										//Jupiter
+										new Body(glm::vec3(0.0f, 500.0f, 9000.0f),
+											glm::vec3(-500.0f, 50.0f, 0.0f),
+											5.97219 * pow(10, 23.5),
+											5515,
+											glm::vec3(1.0f, 0.5f, 0.15f)),
+										new Body(glm::vec3(0.0f, 550.0f, 9500.0f),
+											glm::vec3(0.0f, 0.0f, -50.0f),
+											5.97219e21,
+											5515,
+											glm::vec3(1.0f, 1.0f, 1.0f)),
+										new Body(glm::vec3(0.0f, 450.0f, 8500.0f),
+											glm::vec3(0.0f, 0.0f, -50.0f),
+											5.97219e21,
+											5515,
+											glm::vec3(1.0f, 1.0f, 1.0f)),
+										new Body(glm::vec3(100.0f, 500.0f, 9000.0f),
+											glm::vec3(50.0f, 0.0f, 0.0f),
+											5.97219e21,
+											5515,
+											glm::vec3(1.0f, 1.0f, 1.0f)),
+
+											//Neptune
+											new Body(glm::vec3(0.0f, -500.0f, -10500.0f),
+												glm::vec3(-350.0f, 50.0f, 0.0f),
+												5.97219 * pow(10, 23.5),
+												5515,
+												glm::vec3(0.35f, 0.5f, 0.15f)),
+											new Body(glm::vec3(350.0f, -450.0f, -10500.0f),
+												glm::vec3(0.0f, 0.0f, -550.0f),
+												5.97219e21,
+												5515,
+												glm::vec3(1.0f, 1.0f, 1.0f)),
+											new Body(glm::vec3(-350.0f, 450.0f, -10500.0f),
+												glm::vec3(0.0f, 0.0f, -550.0f),
+												5.97219e21,
+												5515,
+												glm::vec3(1.0f, 1.0f, 1.0f)),
+											new Body(glm::vec3(0.0f, -450.0f, -10500.0f),
+												glm::vec3(-550.0f, 0.0f, 0.0f),
+												5.97219e21,
+												5515,
+												glm::vec3(1.0f, 1.0f, 1.0f)),
+					};
+				if (ImGui::MenuItem("Empty"))
+					bodies = {};
+				ImGui::EndMenu();
+			}
+			ImGui::EndMenuBar();
+		}
+
 		ImGui::InputFloat("SimulationSpeed", &SIM_SPEED);
 		ImGui::SliderFloat3("Camera Position", glm::value_ptr(camera.Position), -1e3, 1e3);
 
-		if (selectedBody == -1)
+		if (selectedBody == -1 || selectedBody > bodies.size())
 		{
 			ImGui::Separator();
 			if (ImGui::Button("New Body"))
@@ -224,7 +239,8 @@ int main()
 			}
 			ImGui::EndChild();
 		}
-		else {
+		else
+		{
 			ImGui::Separator();
 			ImGui::Text("Body Properties");
 			ImGui::Text("Body #%d", selectedBody);
@@ -255,6 +271,7 @@ int main()
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+#pragma endregion
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
