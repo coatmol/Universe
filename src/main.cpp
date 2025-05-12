@@ -18,6 +18,7 @@
 
 #include "engine/Body.h"
 #include "engine/Skybox.h"
+#include "engine/Grid.h"
 
 int WIDTH = 1366;
 int HEIGHT = 720;
@@ -71,6 +72,7 @@ int main()
 	Shader shader("assets/shaders/default-vert.glsl", "assets/shaders/default-frag.glsl");
 	Shader lightShader("assets/shaders/light-vert.glsl", "assets/shaders/light-frag.glsl");
 	Shader skyboxShader("assets/shaders/skybox-vert.glsl", "assets/shaders/skybox-frag.glsl");
+	Shader debugShader("assets/shaders/debug-vert.glsl", "assets/shaders/debug-frag.glsl");
 
 	std::vector<std::string> faces = 
 	{
@@ -82,8 +84,8 @@ int main()
 		"assets/textures/skybox_back.png"
 	};
 
-
 	float SIM_SPEED = 1;
+	bool SHOW_GRID = true;
 
 	std::vector<Body*> bodies = {};
 	int selectedBody = -1;
@@ -93,6 +95,7 @@ int main()
 	glUniform3fv(glGetUniformLocation(shader.ProgramID, "uAmbientLight"), 1, glm::value_ptr(ambientLight));
 
 	Skybox skybox(faces);
+	Grid grid(20000, 50);
 
 	glfwSetWindowUserPointer(window, &camera);
 	glfwSetScrollCallback(window, [](GLFWwindow* window, double xoffset, double yoffset)
@@ -118,6 +121,9 @@ int main()
 		glClearColor(0.0f, 0.0f, 0.0f, 255.0f);
 		camera.UpdateMatrix();
 
+		if (selectedBody > bodies.size())
+			selectedBody = -1;
+
 		if (bodies.size() != 0 && lightBody < bodies.size()) {
 			glUniform3fv(glGetUniformLocation(shader.ProgramID, "uLightPos"), 1, glm::value_ptr(bodies[lightBody]->Position));
 			glUniform3fv(glGetUniformLocation(shader.ProgramID, "uLightColor"), 1, glm::value_ptr(bodies[lightBody]->Color));
@@ -140,7 +146,13 @@ int main()
 			}
 
 			body->Update((SIM_SPEED* deltaTime) / 10000);
-			body->Render(body->Glows ? lightShader : shader, camera);
+			body->Render(lightShader, camera);
+		}
+
+		if (SHOW_GRID)
+		{
+			grid.Update(bodies);
+			grid.Render(debugShader, camera);
 		}
 
 #pragma region ImGui
@@ -154,7 +166,7 @@ int main()
 		{
 			if (ImGui::BeginMenu("Presets"))
 			{
-				if (ImGui::MenuItem("Solar System"))
+				if (ImGui::MenuItem("Solar System")) {
 					bodies = {
 						// POSITION, VELOCITY, MASS, RADIUS, COLOR
 						//SUN
@@ -227,16 +239,21 @@ int main()
 												5515,
 												glm::vec3(1.0f, 1.0f, 1.0f)),
 					};
-				if (ImGui::MenuItem("Empty"))
+					selectedBody = -1;
+				}
+				if (ImGui::MenuItem("Empty")) {
 					bodies = {};
+					selectedBody = -1;
+				}
 				ImGui::EndMenu();
 			}
 			ImGui::EndMenuBar();
 		}
 
 		ImGui::Text("General Options");
-		ImGui::InputFloat("SimulationSpeed", &SIM_SPEED);
-		ImGui::SliderFloat3("Camera Position", glm::value_ptr(camera.Position), -1e3, 1e3);
+		ImGui::InputFloat("Simulation Speed", &SIM_SPEED);
+		ImGui::InputFloat3("Camera Position", glm::value_ptr(camera.Position));
+		ImGui::Checkbox("Show Grid", &SHOW_GRID);
 		ImGui::Separator();
 
 		ImGui::Text("Lighting Options");

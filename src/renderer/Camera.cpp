@@ -110,5 +110,5 @@ glm::mat4 Camera::GetViewMatrix()
 glm::mat4 Camera::GetProjectionMatrix()
 {
 	float aspect = static_cast<float>(width) / static_cast<float>(height);
-	return glm::perspective(glm::radians(FOVdeg), aspect, nearPlane, farPlane);;
+	return glm::perspective(glm::radians(FOVdeg), aspect, nearPlane, farPlane);
 }
