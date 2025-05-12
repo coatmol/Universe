@@ -83,7 +83,7 @@ int main()
 	};
 
 
-	float SIM_SPEED = 0.00001f;
+	float SIM_SPEED = 1;
 
 	std::vector<Body*> bodies = {};
 	int selectedBody = -1;
@@ -136,10 +136,10 @@ int main()
 				if (body == other)
 					continue;
 				glm::vec3 force = body->GetForce(*other);
-				body->Accelerate(force, SIM_SPEED);
+				body->Accelerate(force, (SIM_SPEED * deltaTime) / 10000);
 			}
 
-			body->Update(SIM_SPEED);
+			body->Update((SIM_SPEED* deltaTime) / 10000);
 			body->Render(body->Glows ? lightShader : shader, camera);
 		}
 
