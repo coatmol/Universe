@@ -87,6 +87,10 @@ int main()
 
 	std::vector<Body*> bodies = {};
 	int selectedBody = -1;
+	int lightBody = 0;
+
+	glm::vec3 ambientLight = glm::vec3();
+	glUniform3fv(glGetUniformLocation(shader.ProgramID, "uAmbientLight"), 1, glm::value_ptr(ambientLight));
 
 	Skybox skybox(faces);
 
@@ -113,6 +117,15 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glClearColor(0.0f, 0.0f, 0.0f, 255.0f);
 		camera.UpdateMatrix();
+
+		if (bodies.size() != 0 && lightBody < bodies.size()) {
+			glUniform3fv(glGetUniformLocation(shader.ProgramID, "uLightPos"), 1, glm::value_ptr(bodies[lightBody]->Position));
+			glUniform3fv(glGetUniformLocation(shader.ProgramID, "uLightColor"), 1, glm::value_ptr(bodies[lightBody]->Color));
+		}
+		else {
+			glUniform3fv(glGetUniformLocation(shader.ProgramID, "uLightPos"), 1, glm::value_ptr(glm::vec3()));
+			glUniform3fv(glGetUniformLocation(shader.ProgramID, "uLightColor"), 1, glm::value_ptr(glm::vec3(1,1,1)));
+		}
 
 		//skybox.Render(skyboxShader, camera);
 
@@ -221,8 +234,15 @@ int main()
 			ImGui::EndMenuBar();
 		}
 
+		ImGui::Text("General Options");
 		ImGui::InputFloat("SimulationSpeed", &SIM_SPEED);
 		ImGui::SliderFloat3("Camera Position", glm::value_ptr(camera.Position), -1e3, 1e3);
+		ImGui::Separator();
+
+		ImGui::Text("Lighting Options");
+		ImGui::InputInt("Main Light Body ID", &lightBody, 1, 2);
+		if(ImGui::ColorEdit3("Ambient light color", glm::value_ptr(ambientLight)))
+			glUniform3fv(glGetUniformLocation(shader.ProgramID, "uAmbientLight"), 1, glm::value_ptr(ambientLight));
 
 		if (selectedBody == -1 || selectedBody > bodies.size())
 		{
