@@ -317,6 +317,13 @@ int main()
 					};
 					selectedBody = -1;
 				}
+				if (ImGui::MenuItem("Dynamic Orbit")) {
+					bodies = {
+						new Body(glm::vec3(), glm::vec3(0, 1000, 0), 1e20, 1, glm::vec3(1,1,1), true),
+						new Body(glm::vec3(1000, 0, 0), glm::vec3(0, 0, -3000), 1e18, 1, glm::vec3(0,0,1))
+					};
+					selectedBody = -1;
+				}
 				if (ImGui::MenuItem("Empty")) {
 					bodies = {};
 					selectedBody = -1;
