@@ -166,9 +166,9 @@ int main()
 		if(SHOW_SKYBOX)
 			skybox.Render(skyboxShader, camera);
 
-		for each(Body* body in bodies)
+		for (Body* body : bodies)
 		{
-			for each(Body * other in bodies)
+			for (Body* other : bodies)
 			{
 				if (body == other)
 					continue;
@@ -223,7 +223,7 @@ int main()
 					trajectoryVerts[i].push_back(snaps[i].pos.z);
 				}
 			}
-			for each(auto& verts in trajectoryVerts)
+			for (auto& verts : trajectoryVerts)
 			{
 				trajectoryLine.Update(verts);
 				trajectoryLine.Render(debugShader, camera);
@@ -426,7 +426,7 @@ int main()
 		glfwPollEvents();
 	}
 
-	for each(Body* body in bodies)
+	for (Body* body : bodies)
 	{
 		body->Destroy();
 	}

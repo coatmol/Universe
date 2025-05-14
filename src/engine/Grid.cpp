@@ -51,7 +51,7 @@ void Grid::Update(const std::vector<Body*> bodies)
     for (int i = 0; i < m_Vertices.size(); i += 3) {
         glm::vec3 vertexPos(m_Vertices[i], m_Vertices[i + 1], m_Vertices[i + 2]);
         float totalDisplacement = 0.0f;
-        for each(Body* body in bodies)
+        for (Body* body : bodies)
         {
             glm::vec3 toObject = body->Position - vertexPos;
             float distance = glm::length(toObject);
