@@ -111,6 +111,7 @@ int main()
 	std::vector<Body*> bodies = {};
 	int selectedBody = -1;
 	int lightBody = 0;
+	int trackingBody = -1;
 
 	glm::vec3 ambientLight = glm::vec3();
 	shader.Activate();
@@ -184,6 +185,12 @@ int main()
 			grid.Update(bodies);
 			grid.Render(debugShader, camera);
 		}
+
+
+		if (trackingBody >= 0 && !bodies.empty() && trackingBody < bodies.size())
+			camera.LookAt(bodies[trackingBody]->Position);
+		else
+			trackingBody = -1;
 
 #pragma region trajectory
 		if (SHOW_TRAJECTORIES)
@@ -382,6 +389,12 @@ int main()
 			ImGui::Checkbox("Glows", &bodies[selectedBody]->Glows);
 
 			ImGui::Separator();
+			ImGui::SameLine();
+			if (ImGui::Button("Track/Untrack"))
+				if (trackingBody != selectedBody)
+					trackingBody = selectedBody;
+				else
+					trackingBody = -1;
 			ImGui::SameLine();
 			if (ImGui::Button("Look at"))
 				camera.LookAt(bodies[selectedBody]->Position);
