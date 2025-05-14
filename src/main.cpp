@@ -108,6 +108,10 @@ int main()
 		if(camera)
 			camera->HandleScroll(window, xoffset, yoffset);
 	});
+	glfwSetWindowSizeCallback(window, [](GLFWwindow* window, int width, int height)
+	{
+			glViewport(0, 0, width, height);
+	});
 
 	double currentFrame = glfwGetTime();
 	double lastFrame = currentFrame;
