@@ -86,7 +86,9 @@ Skybox::Skybox(std::vector<std::string> faces)
 
 void Skybox::Render(Shader& shader, Camera& camera)
 {
-    glm::mat4 camMatrix = glm::mat4(glm::mat3(camera.GetProjectionMatrix() * camera.GetViewMatrix()));
+    glm::mat4 view = glm::mat4(glm::mat3(camera.GetViewMatrix()));
+    glm::mat4 camMatrix = camera.GetProjectionMatrix() * view;
+
 
     glDepthFunc(GL_LEQUAL);
 	glDepthMask(GL_FALSE);

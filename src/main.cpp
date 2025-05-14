@@ -78,14 +78,15 @@ int main()
 	{
 		"assets/textures/skybox_right.png",
 		"assets/textures/skybox_left.png",
-		"assets/textures/skybox_up.png",
-		"assets/textures/skybox_down.png",
+		"assets/textures/skybox_top.png",
+		"assets/textures/skybox_bottom.png",
 		"assets/textures/skybox_front.png",
 		"assets/textures/skybox_back.png"
 	};
 
 	float SIM_SPEED = 1;
 	bool SHOW_GRID = true;
+	bool SHOW_SKYBOX = true;
 
 	std::vector<Body*> bodies = {};
 	int selectedBody = -1;
@@ -137,7 +138,8 @@ int main()
 			glUniform3fv(locLightColor, 1, glm::value_ptr(glm::vec3(1,1,1)));
 		}
 
-		//skybox.Render(skyboxShader, camera);
+		if(SHOW_SKYBOX)
+			skybox.Render(skyboxShader, camera);
 
 		for each(Body* body in bodies)
 		{
@@ -258,6 +260,7 @@ int main()
 		ImGui::InputFloat("Simulation Speed", &SIM_SPEED);
 		ImGui::InputFloat3("Camera Position", glm::value_ptr(camera.Position));
 		ImGui::Checkbox("Show Grid", &SHOW_GRID);
+		ImGui::Checkbox("Show Skybox", &SHOW_SKYBOX);
 		ImGui::Separator();
 
 		ImGui::Text("Lighting Options");
