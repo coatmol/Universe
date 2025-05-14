@@ -82,7 +82,6 @@ void Grid::Render(Shader& shader, Camera& camera)
     shader.Activate();
     camera.Update(shader);
     m_VAO.Bind();
-    m_VBO->Bind();
     glPointSize(1.0f);
     glDrawArrays(GL_LINES, 0, m_Vertices.size() / 3);
     glEnable(GL_CULL_FACE);

@@ -92,7 +92,10 @@ int main()
 	int lightBody = 0;
 
 	glm::vec3 ambientLight = glm::vec3();
+	shader.Activate();
 	glUniform3fv(glGetUniformLocation(shader.ProgramID, "uAmbientLight"), 1, glm::value_ptr(ambientLight));
+	auto locLightPos = glGetUniformLocation(shader.ProgramID, "uLightPos");
+	auto locLightColor = glGetUniformLocation(shader.ProgramID, "uLightColor");
 
 	Skybox skybox(faces);
 	Grid grid(20000, 50);
@@ -124,13 +127,14 @@ int main()
 		if (selectedBody > bodies.size())
 			selectedBody = -1;
 
-		if (bodies.size() != 0 && lightBody < bodies.size()) {
-			glUniform3fv(glGetUniformLocation(shader.ProgramID, "uLightPos"), 1, glm::value_ptr(bodies[lightBody]->Position));
-			glUniform3fv(glGetUniformLocation(shader.ProgramID, "uLightColor"), 1, glm::value_ptr(bodies[lightBody]->Color));
+		shader.Activate();
+		if (lightBody >= 0 && !bodies.empty() && lightBody < bodies.size()) {
+			glUniform3fv(locLightPos, 1, glm::value_ptr(bodies[lightBody]->Position));
+			glUniform3fv(locLightColor, 1, glm::value_ptr(bodies[lightBody]->Color));
 		}
 		else {
-			glUniform3fv(glGetUniformLocation(shader.ProgramID, "uLightPos"), 1, glm::value_ptr(glm::vec3()));
-			glUniform3fv(glGetUniformLocation(shader.ProgramID, "uLightColor"), 1, glm::value_ptr(glm::vec3(1,1,1)));
+			glUniform3fv(locLightPos, 1, glm::value_ptr(glm::vec3()));
+			glUniform3fv(locLightColor, 1, glm::value_ptr(glm::vec3(1,1,1)));
 		}
 
 		//skybox.Render(skyboxShader, camera);
@@ -146,7 +150,7 @@ int main()
 			}
 
 			body->Update((SIM_SPEED* deltaTime) / 10000);
-			body->Render(lightShader, camera);
+			body->Render(body->Glows ? lightShader : shader, camera);
 		}
 
 		if (SHOW_GRID)
@@ -258,8 +262,11 @@ int main()
 
 		ImGui::Text("Lighting Options");
 		ImGui::InputInt("Main Light Body ID", &lightBody, 1, 2);
-		if(ImGui::ColorEdit3("Ambient light color", glm::value_ptr(ambientLight)))
+		if (ImGui::ColorEdit3("Ambient light color", glm::value_ptr(ambientLight)))
+		{
+			shader.Activate();
 			glUniform3fv(glGetUniformLocation(shader.ProgramID, "uAmbientLight"), 1, glm::value_ptr(ambientLight));
+		}
 
 		if (selectedBody == -1 || selectedBody > bodies.size())
 		{
@@ -293,15 +300,25 @@ int main()
 			ImGui::Checkbox("Glows", &bodies[selectedBody]->Glows);
 
 			ImGui::Separator();
-
-			if (ImGui::Button("Refresh Mesh"))
-				bodies[selectedBody]->RefreshMesh();
+			ImGui::SameLine();
 			if (ImGui::Button("Look at"))
 				camera.LookAt(bodies[selectedBody]->Position);
+			ImGui::SameLine();
 			if (ImGui::Button("Go to"))
 				camera.Position = bodies[selectedBody]->Position + bodies[selectedBody]->Radius;
+			ImGui::SameLine();
 			if (ImGui::Button("Deselect"))
 				selectedBody = -1;
+			ImGui::SameLine();
+			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
+			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.3f, 0.3f, 1.0f));
+			ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(1.0f, 0.1f, 0.1f, 1.0f));
+			if (ImGui::Button("Del"))
+			{
+                bodies.erase(bodies.begin() + selectedBody);
+				selectedBody = -1;
+			}
+			ImGui::PopStyleColor(3);
 		}
 
 		ImGui::End();
