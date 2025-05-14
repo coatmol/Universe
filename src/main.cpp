@@ -19,6 +19,20 @@
 #include "engine/Body.h"
 #include "engine/Skybox.h"
 #include "engine/Grid.h"
+#include "renderer/LineRenderer.h"
+
+struct Snapshot {
+	glm::vec3 pos, vel;
+	double mass;
+};
+
+inline glm::vec3 computeForce(Snapshot a, Snapshot b)
+{
+	const double G = 6.67430e-11; // Universal gravitation constant
+	glm::vec3 direction = glm::normalize(b.pos - a.pos);
+	float magnitude = static_cast<float>(G * ((a.mass * b.mass) / pow(glm::distance(a.pos, b.pos), 2)));
+	return direction * magnitude;
+}
 
 int WIDTH = 1366;
 int HEIGHT = 720;
@@ -68,11 +82,16 @@ int main()
 	ImGui_ImplGlfw_InitForOpenGL(window, true);          // Second param install_callback=true will install GLFW callbacks and chain to existing ones.
 	ImGui_ImplOpenGL3_Init();
 
-	Camera camera(WIDTH, HEIGHT, glm::vec3(600.0f, 0.0f, 150.0f), 80.0f, 0.1f, 500000.0f);
+	Camera camera(WIDTH, HEIGHT, glm::vec3(0.0f, 0.0f, 0.0f), 80.0f, 0.1f, 500000.0f);
 	Shader shader("assets/shaders/default-vert.glsl", "assets/shaders/default-frag.glsl");
 	Shader lightShader("assets/shaders/light-vert.glsl", "assets/shaders/light-frag.glsl");
 	Shader skyboxShader("assets/shaders/skybox-vert.glsl", "assets/shaders/skybox-frag.glsl");
 	Shader debugShader("assets/shaders/debug-vert.glsl", "assets/shaders/debug-frag.glsl");
+
+	std::vector<Snapshot> snaps;
+	std::vector<std::vector<GLfloat>> trajectoryVerts = { {0,0,0, 0,100,0}, {0,0,0,0,0,100} };
+	LineRenderer trajectoryLine(trajectoryVerts[0]);
+	int trajectorySize = 100;
 
 	std::vector<std::string> faces = 
 	{
@@ -87,6 +106,7 @@ int main()
 	float SIM_SPEED = 1;
 	bool SHOW_GRID = true;
 	bool SHOW_SKYBOX = true;
+	bool SHOW_TRAJECTORIES = true;
 
 	std::vector<Body*> bodies = {};
 	int selectedBody = -1;
@@ -164,6 +184,45 @@ int main()
 			grid.Update(bodies);
 			grid.Render(debugShader, camera);
 		}
+
+#pragma region trajectory
+		if (SHOW_TRAJECTORIES)
+		{
+			snaps.clear();
+			trajectoryVerts.clear();
+			trajectoryVerts.assign(bodies.size(), std::vector<GLfloat>());
+			for (auto& v : trajectoryVerts)
+				v.reserve(trajectorySize * 3);
+			for (auto& b : bodies)
+				snaps.push_back({ b->Position, b->Velocity, b->Mass });
+
+			for (int step = 0; step < trajectorySize; ++step) {
+				// Compute forces on snaps[i] from snaps[j]
+				std::vector<glm::vec3> acc(snaps.size());
+				for (int i = 0; i < snaps.size(); ++i) {
+					glm::vec3 f{ 0 };
+					for (int j = 0; j < snaps.size(); ++j) if (i != j)
+						f += computeForce(snaps[i], snaps[j]);
+					acc[i] = f / static_cast<float>(snaps[i].mass);
+				}
+				// Integrate (e.g. Verlet or RK4) on snaps[*]
+				for (int i = 0; i < snaps.size(); ++i) {
+					// Example: simple semi-implicit Euler
+					snaps[i].vel += acc[i] * (float)deltaTime;
+					snaps[i].pos += snaps[i].vel * (float)deltaTime;
+					// Store for rendering
+					trajectoryVerts[i].push_back(snaps[i].pos.x);
+					trajectoryVerts[i].push_back(snaps[i].pos.y);
+					trajectoryVerts[i].push_back(snaps[i].pos.z);
+				}
+			}
+			for each(auto& verts in trajectoryVerts)
+			{
+				trajectoryLine.Update(verts);
+				trajectoryLine.Render(debugShader, camera);
+			}
+		}
+#pragma endregion
 
 #pragma region ImGui
 		ImGui_ImplOpenGL3_NewFrame();
@@ -251,6 +310,13 @@ int main()
 					};
 					selectedBody = -1;
 				}
+				if (ImGui::MenuItem("Stable Orbit")) {
+					bodies = {
+						new Body(glm::vec3(), glm::vec3(), 1e20, 1, glm::vec3(1,1,1), true),
+						new Body(glm::vec3(1000, 0, 0), glm::vec3(0, 0, -3000), 1e18, 1, glm::vec3(0,0,1))
+					};
+					selectedBody = -1;
+				}
 				if (ImGui::MenuItem("Empty")) {
 					bodies = {};
 					selectedBody = -1;
@@ -265,6 +331,8 @@ int main()
 		ImGui::InputFloat3("Camera Position", glm::value_ptr(camera.Position));
 		ImGui::Checkbox("Show Grid", &SHOW_GRID);
 		ImGui::Checkbox("Show Skybox", &SHOW_SKYBOX);
+		ImGui::Checkbox("Show Trajectories", &SHOW_TRAJECTORIES);
+		ImGui::InputInt("Trajectory Size", &trajectorySize);
 		ImGui::Separator();
 
 		ImGui::Text("Lighting Options");

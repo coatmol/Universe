@@ -36,7 +36,7 @@ Grid::Grid(float size, int divisions)
     m_VAO = VAO();
     m_VAO.Bind();
 
-    m_VBO = new VBO(m_Vertices.data(), m_Vertices.size() * sizeof(GLfloat));
+    m_VBO = new VBO(m_Vertices.data(), m_Vertices.size() * sizeof(GLfloat), GL_DYNAMIC_DRAW);
 
     m_VAO.LinkAttrib(*m_VBO, 0, 3, GL_FLOAT, 3 * sizeof(float), (void*)0);
 
@@ -78,11 +78,9 @@ void Grid::Update(const std::vector<Body*> bodies)
 
 void Grid::Render(Shader& shader, Camera& camera)
 {
-    glDisable(GL_CULL_FACE);
     shader.Activate();
     camera.Update(shader);
     m_VAO.Bind();
-    glPointSize(1.0f);
+    glLineWidth(1.0f);
     glDrawArrays(GL_LINES, 0, m_Vertices.size() / 3);
-    glEnable(GL_CULL_FACE);
 }
