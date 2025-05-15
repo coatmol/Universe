@@ -12,10 +12,13 @@ class Grid
 public:
 	Grid(float size, int divisions);
 
-	void Update(const std::vector<Body*> bodies);
+	void Update(float size, int divisions);
+	void Update(const std::vector<Body*> bodies, glm::vec3 camPos);
 	void Render(Shader& shader, Camera& camera);
 
 private:
+	void Init(float size, int divisions);
+
 	VAO m_VAO;
 	VBO* m_VBO;
 

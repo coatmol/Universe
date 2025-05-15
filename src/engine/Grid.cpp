@@ -2,6 +2,23 @@
 
 Grid::Grid(float size, int divisions)
 {
+    Init(size, divisions);
+
+    m_Vertices = m_OgVerts;
+
+    m_VAO = VAO();
+    m_VAO.Bind();
+
+    m_VBO = new VBO(m_Vertices.data(), m_Vertices.size() * sizeof(GLfloat), GL_DYNAMIC_DRAW);
+
+    m_VAO.LinkAttrib(*m_VBO, 0, 3, GL_FLOAT, 3 * sizeof(float), (void*)0);
+
+    m_VAO.Unbind();
+    m_VBO->Unbind();
+}
+
+void Grid::Init(float size, int divisions)
+{
     float step = size / divisions;
     float halfSize = size / 2.0f;
 
@@ -31,24 +48,26 @@ Grid::Grid(float size, int divisions)
             }
         }
     }
-    m_Vertices = m_OgVerts;
-
-    m_VAO = VAO();
-    m_VAO.Bind();
-
-    m_VBO = new VBO(m_Vertices.data(), m_Vertices.size() * sizeof(GLfloat), GL_DYNAMIC_DRAW);
-
-    m_VAO.LinkAttrib(*m_VBO, 0, 3, GL_FLOAT, 3 * sizeof(float), (void*)0);
-
-    m_VAO.Unbind();
-    m_VBO->Unbind();
 }
 
-void Grid::Update(const std::vector<Body*> bodies)
+void Grid::Update(float size, int divisions)
+{
+    m_OgVerts.clear();
+    m_Vertices.clear();
+    Init(size, divisions);
+    m_Vertices = m_OgVerts;
+    m_VBO->Bind();
+    glBufferData(GL_ARRAY_BUFFER, m_Vertices.size() * sizeof(GLfloat), m_Vertices.data(), GL_DYNAMIC_DRAW);
+}
+
+void Grid::Update(const std::vector<Body*> bodies, glm::vec3 camPos)
 {
     m_Vertices = m_OgVerts;
+    glm::vec3 cPos = camPos * glm::vec3(1, 0, 1); // Remove y-axis
 
     for (int i = 0; i < m_Vertices.size(); i += 3) {
+        m_Vertices[i]       += cPos.x;
+        m_Vertices[i + 2]   += cPos.z;
         glm::vec3 vertexPos(m_Vertices[i], m_Vertices[i + 1], m_Vertices[i + 2]);
         float totalDisplacement = 0.0f;
         for (Body* body : bodies)
@@ -62,7 +81,7 @@ void Grid::Update(const std::vector<Body*> bodies)
             totalDisplacement += dz;
         }
 
-        m_Vertices[i + 1] = totalDisplacement;
+        m_Vertices[i + 1]   = totalDisplacement;
     }
     float highest = 0;
     for (int i = 1; i < m_Vertices.size(); i += 3) {

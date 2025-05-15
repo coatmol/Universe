@@ -105,6 +105,9 @@ int main()
 
 	float SIM_SPEED = 1;
 	bool SHOW_GRID = true;
+	bool GRID_FOLLOWS_CAMERA = true;
+	float GRID_SIZE = 20000;
+	int GRID_DIVS = 100;
 	bool SHOW_SKYBOX = true;
 	bool SHOW_TRAJECTORIES = true;
 
@@ -120,7 +123,7 @@ int main()
 	auto locLightColor = glGetUniformLocation(shader.ProgramID, "uLightColor");
 
 	Skybox skybox(faces);
-	Grid grid(20000, 50);
+	Grid grid(GRID_SIZE, GRID_DIVS);
 
 	glfwSetWindowUserPointer(window, &camera);
 	glfwSetScrollCallback(window, [](GLFWwindow* window, double xoffset, double yoffset)
@@ -170,7 +173,7 @@ int main()
 		{
 			for (Body* other : bodies)
 			{
-				if (body == other)
+				if (body == other || body->Mass == 0)
 					continue;
 				glm::vec3 force = body->GetForce(*other);
 				body->Accelerate(force, (SIM_SPEED * deltaTime) / 10000);
@@ -182,7 +185,7 @@ int main()
 
 		if (SHOW_GRID)
 		{
-			grid.Update(bodies);
+			grid.Update(bodies, GRID_FOLLOWS_CAMERA ? glm::floor(camera.Position / (GRID_SIZE / GRID_DIVS)) * (GRID_SIZE / GRID_DIVS) : glm::vec3());
 			grid.Render(debugShader, camera);
 		}
 
@@ -344,6 +347,11 @@ int main()
 		ImGui::InputFloat("Simulation Speed", &SIM_SPEED);
 		ImGui::InputFloat3("Camera Position", glm::value_ptr(camera.Position));
 		ImGui::Checkbox("Show Grid", &SHOW_GRID);
+		ImGui::Checkbox("Grid Follows Camera", &GRID_FOLLOWS_CAMERA);
+		if (ImGui::InputFloat("Grid Size", &GRID_SIZE, 10, 100))
+			grid.Update(GRID_SIZE, GRID_DIVS);
+		if (ImGui::InputInt("Grid Divisions", &GRID_DIVS, 5, 10))
+			grid.Update(GRID_SIZE, GRID_DIVS);
 		ImGui::Checkbox("Show Skybox", &SHOW_SKYBOX);
 		ImGui::Checkbox("Show Trajectories", &SHOW_TRAJECTORIES);
 		ImGui::InputInt("Trajectory Size", &trajectorySize);
