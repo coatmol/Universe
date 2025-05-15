@@ -89,7 +89,7 @@ void Grid::Update(const std::vector<Body*> bodies, glm::vec3 camPos)
             highest = m_Vertices[i];
     }
     for (int i = 1; i < m_Vertices.size(); i += 3) {
-        m_Vertices[i] -= highest / 2;
+        m_Vertices[i] -= highest;
     }
 
     m_VBO->Update(m_Vertices.data(), GLsizeiptr(m_Vertices.size() * sizeof(GLfloat)));
