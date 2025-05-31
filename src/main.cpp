@@ -334,6 +334,13 @@ int main()
 					};
 					selectedBody = -1;
 				}
+				if (ImGui::MenuItem("Spinny Orbit")) {
+					bodies = {
+						new Body(glm::vec3(), glm::vec3(0, 1000, 0), 1e20, 1411, glm::vec3(1,1,1), true),
+						new Body(glm::vec3(200, 200, -200), glm::vec3(0, 0, 7500), 1e20, 1411, glm::vec3(0,0,1))
+					};
+					selectedBody = -1;
+				}
 				if (ImGui::MenuItem("Empty")) {
 					bodies = {};
 					selectedBody = -1;
