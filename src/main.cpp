@@ -22,7 +22,7 @@
 #include "renderer/LineRenderer.h"
 
 struct Snapshot {
-	glm::vec3 pos, vel;
+	glm::vec3 pos, vel, color;
 	double mass;
 };
 
@@ -106,6 +106,7 @@ int main()
 	float SIM_SPEED = 1;
 	bool SHOW_GRID = true;
 	bool GRID_FOLLOWS_CAMERA = true;
+	glm::vec3 bodyCameraOffset = glm::vec3();
 	float GRID_SIZE = 20000;
 	int GRID_DIVS = 100;
 	bool SHOW_SKYBOX = true;
@@ -115,6 +116,7 @@ int main()
 	int selectedBody = -1;
 	int lightBody = 0;
 	int trackingBody = -1;
+	int followingBody = -1;
 
 	glm::vec3 ambientLight = glm::vec3();
 	shader.Activate();
@@ -194,6 +196,11 @@ int main()
 			camera.LookAt(bodies[trackingBody]->Position);
 		else
 			trackingBody = -1;
+		
+		if (followingBody >= 0 && !bodies.empty() && followingBody < bodies.size())
+			camera.Position = bodies[followingBody]->Position - bodyCameraOffset;
+		else
+			followingBody = -1;
 
 #pragma region trajectory
 		if (SHOW_TRAJECTORIES)
@@ -204,7 +211,7 @@ int main()
 			for (auto& v : trajectoryVerts)
 				v.reserve(trajectorySize * 3);
 			for (auto& b : bodies)
-				snaps.push_back({ b->Position, b->Velocity, b->Mass });
+				snaps.push_back({ b->Position, b->Velocity, b->Color, b->Mass });
 
 			for (int step = 0; step < trajectorySize; ++step) {
 				// Compute forces on snaps[i] from snaps[j]
@@ -224,6 +231,9 @@ int main()
 					trajectoryVerts[i].push_back(snaps[i].pos.x);
 					trajectoryVerts[i].push_back(snaps[i].pos.y);
 					trajectoryVerts[i].push_back(snaps[i].pos.z);
+					trajectoryVerts[i].push_back(snaps[i].color.r);
+					trajectoryVerts[i].push_back(snaps[i].color.g);
+					trajectoryVerts[i].push_back(snaps[i].color.b);
 				}
 			}
 			for (auto& verts : trajectoryVerts)
@@ -411,6 +421,15 @@ int main()
 				else
 					trackingBody = -1;
 			ImGui::SameLine();
+			if (ImGui::Button("Follow")) {
+				if (trackingBody != selectedBody) {
+					followingBody = selectedBody;
+					bodyCameraOffset = bodies[selectedBody]->Position - camera.Position;
+				}
+				else
+					followingBody = -1;
+			}
+
 			if (ImGui::Button("Look at"))
 				camera.LookAt(bodies[selectedBody]->Position);
 			ImGui::SameLine();

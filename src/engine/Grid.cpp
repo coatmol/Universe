@@ -11,7 +11,8 @@ Grid::Grid(float size, int divisions)
 
     m_VBO = new VBO(m_Vertices.data(), m_Vertices.size() * sizeof(GLfloat), GL_DYNAMIC_DRAW);
 
-    m_VAO.LinkAttrib(*m_VBO, 0, 3, GL_FLOAT, 3 * sizeof(float), (void*)0);
+    m_VAO.LinkAttrib(*m_VBO, 0, 3, GL_FLOAT, 6 * sizeof(float), (void*)0);
+    m_VAO.LinkAttrib(*m_VBO, 1, 3, GL_FLOAT, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 
     m_VAO.Unbind();
     m_VBO->Unbind();
@@ -31,7 +32,19 @@ void Grid::Init(float size, int divisions)
                 float xStart = -halfSize + xStep * step;
                 float xEnd = xStart + step;
                 m_OgVerts.push_back(xStart); m_OgVerts.push_back(y); m_OgVerts.push_back(z);
+                if (z == 0) {
+                    m_OgVerts.push_back(1.0f); m_OgVerts.push_back(0.0f); m_OgVerts.push_back(0.0f);
+                }
+                else {
+                    m_OgVerts.push_back(0.5f); m_OgVerts.push_back(0.5f); m_OgVerts.push_back(0.5f);
+                }
                 m_OgVerts.push_back(xEnd);   m_OgVerts.push_back(y); m_OgVerts.push_back(z);
+                if (z == 0) {
+                    m_OgVerts.push_back(1.0f); m_OgVerts.push_back(0.0f); m_OgVerts.push_back(0.0f);
+                }
+                else {
+                    m_OgVerts.push_back(0.5f); m_OgVerts.push_back(0.5f); m_OgVerts.push_back(0.5f);
+                }
             }
         }
     }
@@ -44,7 +57,20 @@ void Grid::Init(float size, int divisions)
                 float zStart = -halfSize + zStep * step;
                 float zEnd = zStart + step;
                 m_OgVerts.push_back(x); m_OgVerts.push_back(y); m_OgVerts.push_back(zStart);
+                if (x == 0) {
+                    m_OgVerts.push_back(0.0f); m_OgVerts.push_back(0.0f); m_OgVerts.push_back(1.0f);
+                }
+                else {
+                    m_OgVerts.push_back(0.5f); m_OgVerts.push_back(0.5f); m_OgVerts.push_back(0.5f);
+                }
+
                 m_OgVerts.push_back(x); m_OgVerts.push_back(y); m_OgVerts.push_back(zEnd);
+                if (x == 0) {
+                    m_OgVerts.push_back(0.0f); m_OgVerts.push_back(0.0f); m_OgVerts.push_back(1.0f);
+                }
+                else {
+                    m_OgVerts.push_back(0.5f); m_OgVerts.push_back(0.5f); m_OgVerts.push_back(0.5f);
+                }
             }
         }
     }
@@ -65,7 +91,7 @@ void Grid::Update(const std::vector<Body*> bodies, glm::vec3 camPos)
     m_Vertices = m_OgVerts;
     glm::vec3 cPos = camPos * glm::vec3(1, 0, 1); // Remove y-axis
 
-    for (int i = 0; i < m_Vertices.size(); i += 3) {
+    for (int i = 0; i < m_Vertices.size(); i += 6) {
         m_Vertices[i]       += cPos.x;
         m_Vertices[i + 2]   += cPos.z;
         glm::vec3 vertexPos(m_Vertices[i], m_Vertices[i + 1], m_Vertices[i + 2]);
@@ -84,10 +110,10 @@ void Grid::Update(const std::vector<Body*> bodies, glm::vec3 camPos)
         m_Vertices[i + 1]   = totalDisplacement;
     }
     float highest = 0;
-    for (int i = 1; i < m_Vertices.size(); i += 3)
+    for (int i = 1; i < m_Vertices.size(); i += 6)
         if (m_Vertices[i] > highest)
             highest = m_Vertices[i];
-    for (int i = 1; i < m_Vertices.size(); i += 3)
+    for (int i = 1; i < m_Vertices.size(); i += 6)
         m_Vertices[i] -= highest;
 
     m_VBO->Update(m_Vertices.data(), GLsizeiptr(m_Vertices.size() * sizeof(GLfloat)));
@@ -98,6 +124,15 @@ void Grid::Render(Shader& shader, Camera& camera)
     shader.Activate();
     camera.Update(shader);
     m_VAO.Bind();
+
     glLineWidth(1.0f);
-    glDrawArrays(GL_LINES, 0, m_Vertices.size() / 3);
+    glDisable(GL_BLEND);
+    glDisable(GL_BLEND_COLOR);
+    glDisable(GL_LINE_SMOOTH);
+
+    glDrawArrays(GL_LINES, 0, m_Vertices.size() / 6);
+
+    glEnable(GL_BLEND);
+    glEnable(GL_BLEND_COLOR);
+    glEnable(GL_LINE_SMOOTH);
 }
