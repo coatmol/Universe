@@ -351,6 +351,13 @@ int main()
 					};
 					selectedBody = -1;
 				}
+				if (ImGui::MenuItem("Blackhole orbit")) {
+					bodies = {
+						new Body(glm::vec3(), glm::vec3(0, 10000, 0), 1e22, 3000, glm::vec3(1,1,1), true),
+						new Body(glm::vec3(0, 250, 2500), glm::vec3(0, -10000, 0), 1e22, 3000, glm::vec3(1,1,1), true)
+					};
+					selectedBody = -1;
+				}
 				if (ImGui::MenuItem("Empty")) {
 					bodies = {};
 					selectedBody = -1;
