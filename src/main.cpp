@@ -36,6 +36,7 @@ inline glm::vec3 computeForce(Snapshot a, Snapshot b)
 
 int WIDTH = 1366;
 int HEIGHT = 720;
+static bool f11PressedLastFrame = false;
 
 int main()
 {
@@ -138,18 +139,6 @@ int main()
 	{
 		glViewport(0, 0, width, height);
 	});
-	/*glfwSetKeyCallback(window, [](GLFWwindow* window, int key, int scancode, int action, int mode) {
-		if (key == GLFW_KEY_F11 && action == GLFW_PRESS) {
-			if (glfwGetWindowMonitor(window) == nullptr) {
-				GLFWmonitor* monitor = glfwGetPrimaryMonitor();
-				const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-				glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
-			}
-			else {
-				glfwSetWindowMonitor(window, nullptr, 100, 100, WIDTH, HEIGHT, 0);
-			}
-		}
-	});*/
 
 	double currentFrame = glfwGetTime();
 	double lastFrame = currentFrame;
@@ -162,6 +151,18 @@ int main()
 		lastFrame = currentFrame;
 
 		camera.HandleInput(window, deltaTime);
+		if (glfwGetKey(window, GLFW_KEY_F11) == GLFW_PRESS && !f11PressedLastFrame) {
+			if (glfwGetWindowMonitor(window) == nullptr) {
+				GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+				const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+				glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+			}
+			else {
+				glfwSetWindowMonitor(window, nullptr, 100, 100, WIDTH, HEIGHT, 0);
+			}
+		}
+		f11PressedLastFrame = glfwGetKey(window, GLFW_KEY_F11) == GLFW_PRESS;
+
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glClearColor(0.0f, 0.0f, 0.0f, 255.0f);
