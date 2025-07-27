@@ -138,7 +138,7 @@ int main()
 	{
 		glViewport(0, 0, width, height);
 	});
-	glfwSetKeyCallback(window, [](GLFWwindow* window, int key, int scancode, int action, int mode) {
+	/*glfwSetKeyCallback(window, [](GLFWwindow* window, int key, int scancode, int action, int mode) {
 		if (key == GLFW_KEY_F11 && action == GLFW_PRESS) {
 			if (glfwGetWindowMonitor(window) == nullptr) {
 				GLFWmonitor* monitor = glfwGetPrimaryMonitor();
@@ -149,7 +149,7 @@ int main()
 				glfwSetWindowMonitor(window, nullptr, 100, 100, WIDTH, HEIGHT, 0);
 			}
 		}
-	});
+	});*/
 
 	double currentFrame = glfwGetTime();
 	double lastFrame = currentFrame;
@@ -223,7 +223,7 @@ int main()
 			for (auto& v : trajectoryVerts)
 				v.reserve(trajectorySize * 3);
 			for (auto& b : bodies)
-				snaps.push_back({ b->Position, b->Velocity, b->Color, b->Mass });
+				snaps.push_back({ b->Position, b->Velocity * ((SIM_SPEED < 0) ? -1.0f : 1.0f), b->Color, b->Mass });
 
 			for (int step = 0; step < trajectorySize; ++step) {
 				// Compute forces on snaps[i] from snaps[j]
