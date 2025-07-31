@@ -444,7 +444,7 @@ int main()
 					trackingBody = -1;
 			ImGui::SameLine();
 			if (ImGui::Button("Follow")) {
-				if (trackingBody != selectedBody) {
+				if (followingBody != selectedBody) {
 					followingBody = selectedBody;
 					bodyCameraOffset = bodies[selectedBody]->Position - camera.Position;
 				}
